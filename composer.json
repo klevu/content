@@ -1,0 +1,33 @@
+{
+    "name": "klevu/module-content",
+    "description": "Search that learns, generates sales. Fastest, most advanced cloud-based search, autocomplete, instant search",
+    "require": {
+		"php": "~5.5.0|~5.6.0|~7.0.0",
+		"magento/module-store": "*",
+		"magento/module-catalog": "*",
+		"magento/module-backend": "*",
+		"magento/module-eav": "*",
+		"magento/framework": "*"
+    },
+    "type": "magento-module",
+    "version": "2.1.0",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
+	"authors": [
+	    {
+			"name": "Klevu Oy",
+			"email": "niraj.aswani@klevu.com",
+			"homepage": "https://www.klevu.com/"
+		}
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Klevu\\Content\\": ""
+        }
+    }
+}
