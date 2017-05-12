@@ -105,7 +105,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             'klevu_totalResults' => $noOfTrackingResults,
             'klevu_shopperIP' => $this->_searchHelperData->getIp(),
             'klevu_typeOfQuery' => $queryType,
-            'Klevu\typeOfRecord' => 'KLEVU_CMS'
+            'Klevu_typeOfRecord' => 'KLEVU_CMS'
         );
         $this->log(\Zend\Log\Logger::DEBUG, sprintf("Content Search tracking for term: %s", $q));
         return $this->_klevu_tracking_parameters;
@@ -244,21 +244,34 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         if (empty($filters)) {
             return array();
         }
+		
         foreach($filters as $filter) {
-            $key = (string)$filter['key'];
-            $attributes[$key] = array(
-                'label' => (string)$filter['label']
-            );
-            $attributes[$key]['options'] = array();
-            if ($filter['options']) {
-                foreach($filter['options'] as $option) {
-                    $attributes[$key]['options'][] = array(
-                        'label' => trim((string)$option['name']) ,
-                        'count' => trim((string)$option['count']) ,
-                        'selected' => trim((string)$option['selected'])
-                    );
-                }
-            }
+			foreach ($filter as $key => $filterData) {
+				$key = (string)$filterData['@attributes']['key'];
+				$attributes[$key] = array(
+					'label' => (string)$filterData['@attributes']['label']
+				);
+				$attributes[$key]['option'] = array();
+				if ($filterData['option']) {
+					foreach($filterData['option'] as $option) {
+						if(isset($option['@attributes']['name'])) {
+							$attributes[$key]['options'][] = array(
+								'label' => trim((string)$option['@attributes']['name']) ,
+								'count' => trim((string)$option['@attributes']['count']) ,
+								'selected' => trim((string)$option['@attributes']['selected'])
+							);
+						}
+						
+						if(isset($option['name'])) {
+							$attributes[$key]['options'][] = array(
+								'label' => trim((string)$option['name']) ,
+								'count' => trim((string)$option['count']) ,
+								'selected' => trim((string)$option['selected'])
+							);
+						}
+					}
+				}
+			}
         }
         return $attributes;
     }

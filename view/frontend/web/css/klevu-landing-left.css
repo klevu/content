@@ -1,0 +1,35 @@
+.category-products-klevu { margin-top:15px;}
+.category-products-klevu .products-list
+ {
+		
+	list-style: none;    margin: 0px;    padding: 0px;
+}
+.category-products-klevu .products-list .item
+ {
+	padding-top:10px; padding-bottom: 10px;
+}
+.category-products-klevu .products-list .item a
+{
+	font-size: 18px;    color:#333; margin-bottom:5px;     display: block;
+}
+.kuFilterSelect
+ {
+	padding: 10px;
+    border-bottom: 1px solid #CCC;
+    list-style: none;
+    margin-bottom: 0px;
+}
+.kuFilterSelect a 
+{
+		
+	text-transform: uppercase;
+    color: #333;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+}
+.kuFilterSelect a:hover 
+{ text-decoration:none;
+}
+.kuFilterSelect a .count { color:#333;}
+.sidebar-title {font-weight: 300;    font-size: 18px;}

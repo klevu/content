@@ -40,7 +40,7 @@ class Tracking extends \Magento\Framework\View\Element\Template
                 'klevu_productId' => $page->getPageId(),
                 'klevu_productName' => $page->getTitle(),
                 'klevu_productUrl' => $page->getIdentifier(),
-                'Klevu\typeOfRecord' => 'KLEVU_CMS'
+                'Klevu_typeOfRecord' => 'KLEVU_CMS'
             );
             return json_encode($content);
         }

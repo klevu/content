@@ -1,27 +1,19 @@
 <?php
 namespace Klevu\Content\Block;
+use Magento\Framework\View\Element\Template;
+use Magento\Framework\View\Element\Template\Context;
+use Magento\Framework\App\RequestInterface;
 
 class Index extends \Magento\Framework\View\Element\Template
 {
-    /**
-     * @var \Klevu\Content\Helper\Data
-     */
-    protected $_contentHelperData;
-
-    public function __construct(\Klevu\Content\Helper\Data $contentHelperData)
-    {
-        $this->_contentHelperData = $contentHelperData;
-
-        parent::__construct();
-    }
-
+    
     /**
      * Get the Klevu other content
      * @return array
      */
     public function getCmsContent()
     {
-        $collection = $this->_contentHelperData->getCmsData();
+        $collection = \Magento\Framework\App\ObjectManager::getInstance()->get('Klevu\Content\Helper\Data')->getCmsData();
         return $collection;
     }
     /**
@@ -31,7 +23,7 @@ class Index extends \Magento\Framework\View\Element\Template
     public function getContentFilters()
 
     {
-        $filters = $this->_contentHelperData->getKlevuFilters();
+        $filters = \Magento\Framework\App\ObjectManager::getInstance()->get('Klevu\Content\Helper\Data')->getKlevuFilters();
         return $filters;
     }
 }

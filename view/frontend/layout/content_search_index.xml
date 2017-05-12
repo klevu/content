@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="2columns-left" xsi:noNamespaceSchemaLocation="../../../../../lib/internal/Magento/Framework/View/Layout/etc/page_configuration.xsd">
+    <body>
+	    <head>
+			<css src="Klevu_Contnet::klevu/content/klevu-landing-left.css"/>
+		</head>
+        <referenceBlock name="content">
+		    <block class="Klevu\Content\Block\Index" template="klevu/content/top.phtml" />
+            <block class="Klevu\Content\Block\Index" template="klevu/content/index.phtml" name="content_index"/>
+        </referenceBlock>
+		<referenceBlock name="catalog.compare.sidebar" remove="true"/>
+		<referenceContainer name="wishlist_sidebar" remove="true" />
+		<referenceContainer name="sidebar.additional">
+			<block class="Klevu\Content\Block\Index" template="klevu/content/left.phtml" name="content_left"/>
+        </referenceContainer>
+    </body>
+</config>
