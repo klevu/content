@@ -7,6 +7,6 @@ class Select extends \Magento\Framework\View\Element\Html\Select
     {
         $this->setName($this->getInputName());
         $this->setClass('select');
-        return trim(preg_replace('/\s+/', ' ',parent::_toHtml()));
+        return trim(preg_replace('/\s+/', ' ', parent::_toHtml()));
     }
 }

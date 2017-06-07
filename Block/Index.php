@@ -1,5 +1,6 @@
 <?php
 namespace Klevu\Content\Block;
+
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
 use Magento\Framework\App\RequestInterface;
@@ -21,7 +22,6 @@ class Index extends \Magento\Framework\View\Element\Template
      * @return array
      */
     public function getContentFilters()
-
     {
         $filters = \Magento\Framework\App\ObjectManager::getInstance()->get('Klevu\Content\Helper\Data')->getKlevuFilters();
         return $filters;

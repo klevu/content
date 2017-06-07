@@ -13,9 +13,11 @@ class Tracking extends \Magento\Framework\View\Element\Template
      */
     protected $_cmsModelPage;
 
-    public function __construct(\Klevu\Search\Helper\Config $searchHelperConfig, 
-        \Magento\Cms\Model\Page $cmsModelPage)
-    {
+    public function __construct(
+        \Klevu\Search\Helper\Config $searchHelperConfig,
+        \Magento\Cms\Model\Page $cmsModelPage
+    ) {
+    
         $this->_searchHelperConfig = $searchHelperConfig;
         $this->_cmsModelPage = $cmsModelPage;
 
@@ -27,13 +29,14 @@ class Tracking extends \Magento\Framework\View\Element\Template
      * @return string
      * @throws Exception
      */
-    public function getJsonTrackingData() {
+    public function getJsonTrackingData()
+    {
     
         $api_key = $this->_searchHelperConfig->getJsApiKey();
         // Get current Cms page object
         $page = $this->_cmsModelPage;
         if ($page->getId()) {
-            $content = array(
+            $content = [
                 'klevu_apiKey' => $api_key,
                 'klevu_term'   => '',
                 'klevu_type'   => 'clicked',
@@ -41,7 +44,7 @@ class Tracking extends \Magento\Framework\View\Element\Template
                 'klevu_productName' => $page->getTitle(),
                 'klevu_productUrl' => $page->getIdentifier(),
                 'Klevu_typeOfRecord' => 'KLEVU_CMS'
-            );
+            ];
             return json_encode($content);
         }
     }

@@ -1,11 +1,10 @@
 <?php
 namespace Klevu\Content\Block\Adminhtml\Form;
 
-
 class Cmspages extends \Magento\Config\Block\System\Config\Form\Field\FieldArray\AbstractFieldArray
 {
-	
-	/**
+    
+    /**
      * @var Customerpage
      */
     protected $_pageRenderer;
@@ -17,10 +16,8 @@ class Cmspages extends \Magento\Config\Block\System\Config\Form\Field\FieldArray
      */
     protected function _getpageRenderer()
     {
-	    
-		
-	    $this->_cmsModelPage = \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\Cms\Model\Page');
-	    $cms_pages = $this->_cmsModelPage->getCollection()->addFieldToSelect(array("page_id","title"))->addFieldToFilter('is_active',1);
+        $this->_cmsModelPage = \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\Cms\Model\Page');
+        $cms_pages = $this->_cmsModelPage->getCollection()->addFieldToSelect(["page_id","title"])->addFieldToFilter('is_active', 1);
         $page_ids = $cms_pages->getData();
         foreach ($page_ids as $id) {
             $cmsOptions[$id['page_id']] = $id['title'];
@@ -32,8 +29,8 @@ class Cmspages extends \Magento\Config\Block\System\Config\Form\Field\FieldArray
                 ['data' => ['is_render_to_js_template' => true]]
             );
             $this->_pageRenderer->setClass('customer_page_select');
-			
-			$this->_pageRenderer->setOptions($cmsOptions);
+            
+            $this->_pageRenderer->setOptions($cmsOptions);
             $this->_pageRenderer->setExtraParams('style="width:200px;"');
         }
         return $this->_pageRenderer;
@@ -46,12 +43,12 @@ class Cmspages extends \Magento\Config\Block\System\Config\Form\Field\FieldArray
      */
     protected function _prepareToRender()
     {
-		
-		$this->addColumn('cmspages', array(
+        
+        $this->addColumn('cmspages', [
             'label' => __('CMS Pages'),
             'renderer'=> $this->_getpageRenderer(),
-        ));
-		
+        ]);
+        
         $this->_addAfter = false;
         $this->_addButtonLabel = __('Exclude CMS Pages');
     }
@@ -72,5 +69,4 @@ class Cmspages extends \Magento\Config\Block\System\Config\Form\Field\FieldArray
             $optionExtraAttr
         );
     }
-	
 }

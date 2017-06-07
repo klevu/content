@@ -1,12 +1,12 @@
 <?php
 namespace Klevu\Content\Model\Observer;
 
- 
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\View\Layout\Interceptor;
 
-class SyncOtherContent implements ObserverInterface {
+class SyncOtherContent implements ObserverInterface
+{
 
     /**
      * @var \Klevu\Content\Helper\Data
@@ -23,14 +23,15 @@ class SyncOtherContent implements ObserverInterface {
      */
     protected $_backendModelSession;
 
-    public function __construct(\Klevu\Content\Helper\Data $contentHelperData, 
-        \Klevu\Content\Model\Content $contentModelContent, 
-        \Magento\Backend\Model\Session $backendModelSession)
-    {
+    public function __construct(
+        \Klevu\Content\Helper\Data $contentHelperData,
+        \Klevu\Content\Model\Content $contentModelContent,
+        \Magento\Backend\Model\Session $backendModelSession
+    ) {
+    
         $this->_contentHelperData = $contentHelperData;
         $this->_contentModelContent = $contentModelContent;
         $this->_backendModelSession = $backendModelSession;
-
     }
 
     /**
@@ -38,8 +39,8 @@ class SyncOtherContent implements ObserverInterface {
      *
      * @param \Magento\Framework\Event\Observer $observer
      */
-    public function execute(\Magento\Framework\Event\Observer $observer) {
+    public function execute(\Magento\Framework\Event\Observer $observer)
+    {
         $this->_contentModelContent->run();
     }
-    
 }

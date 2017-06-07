@@ -1,12 +1,16 @@
-<?php 
-$config = \Magento\Framework\App\ObjectManager::getInstance()->get('Klevu\Content\Helper\Data'); 
-if($config->isCmsSyncEnabledOnFront()) {?>
+<?php
+$config = \Magento\Framework\App\ObjectManager::getInstance()->get('Klevu\Content\Helper\Data');
+if ($config->isCmsSyncEnabledOnFront()) {?>
     <?php
         $url = $block->getUrl('catalogsearch/result/')."?q=".\Magento\Framework\App\ObjectManager::getInstance()->get('Magento\Framework\App\RequestInterface')->getParam("q");
         $url_content = $block->getUrl('content/search')."?q=".\Magento\Framework\App\ObjectManager::getInstance()->get('Magento\Framework\App\RequestInterface')->getParam("q");
     ?>
     <div class="page-title">
     <?php $selected_tab = \Magento\Framework\App\ObjectManager::getInstance()->get('Magento\Framework\App\RequestInterface')->getModuleName(); ?>
-        <a href="<?php echo $url; ?>" <?php if($selected_tab == "catalogsearch"){?> class="contentSelect" <?php } ?> ><?php echo __('Products'); ?></a> | <a href="<?php echo $url_content; ?>" <?php if($selected_tab == "content"){?> class="contentSelect" <?php } ?>><?php echo __('Other content'); ?></a>
+        <a href="<?php echo $url; ?>" <?php if ($selected_tab == "catalogsearch") {
+?> class="contentSelect" <?php
+} ?> ><?php echo __('Products'); ?></a> | <a href="<?php echo $url_content; ?>" <?php if ($selected_tab == "content") {
+?> class="contentSelect" <?php
+} ?>><?php echo __('Other content'); ?></a>
     </div>
 <?php } ?>
