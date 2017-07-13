@@ -1,6 +1,5 @@
 <?php
 namespace Klevu\Content\Model;
-
 use \Klevu\Search\Model\Sync;
 use \Klevu\Search\Helper\Config;
 use \Magento\Framework\App\Config\ScopeConfigInterface;
@@ -8,54 +7,44 @@ use \Magento\Framework\Stdlib\DateTime\DateTime;
 use \Klevu\Search\Model\Api\Action\Startsession;
 use \Klevu\Search\Model\Api\Action\Deleterecords;
 use \Klevu\Search\Model\Api\Action\Updaterecords;
-
 class Content extends \Klevu\Search\Model\Product\Sync
 {
     /**
      * @var \Magento\Framework\Model\Resource
      */
     protected $_frameworkModelResource;
-
     /**
      * @var \Klevu\Search\Model\Session
      */
     protected $_searchModelSession;
-
     /**
      * @var \Magento\Store\Model\StoreManagerInterface
      */
     protected $_storeModelStoreManagerInterface;
-
     /**
      * @var \Klevu\Content\Helper\Data
      */
     protected $_contentHelperData;
-
     /**
      * @var \Klevu\Search\Model\Api\Action\Deleterecords
      */
     protected $_apiActionDeleterecords;
-
     /**
      * @var \Klevu\Search\Model\Api\Action\Addrecords
      */
     protected $_apiActionAddrecords;
-
     /**
      * @var \Klevu\Search\Helper\Compat
      */
     protected $_searchHelperCompat;
-
     /**
      * @var \Magento\Cms\Model\Page
      */
     protected $_cmsModelPage;
-
     /**
      * @var \Klevu\Search\Model\Api\Action\Updaterecords
      */
     protected $_apiActionUpdaterecords;
-
     /**
      * @var \Klevu\Search\Helper\Data
      */
@@ -76,7 +65,6 @@ class Content extends \Klevu\Search\Model\Product\Sync
      * @var \Magento\Cron\Model\Schedule
      */
     protected $_cronModelSchedule;
-
     public function __construct(
         \Magento\Framework\App\ResourceConnection $frameworkModelResource,
         \Magento\Backend\Model\Session $searchModelSession,
@@ -114,21 +102,17 @@ class Content extends \Klevu\Search\Model\Product\Sync
             $this->_page_value = "page_id";
         }
     }
-
     public function _construct()
     {
         parent::_construct();
-
         $this->addData([
             "connection" => $this->_frameworkModelResource->getConnection("core_write")
         ]);
     }
-
     public function getJobCode()
     {
         return "klevu_search_content_sync";
     }
-
     /**
      * Perform Content Sync on any configured stores, adding new content, updating modified and
      * deleting removed content since last sync.
@@ -179,9 +163,7 @@ class Content extends \Klevu\Search\Model\Product\Sync
         if ($this->rescheduleIfOutOfMemory()) {
             return;
         }
-
         $cPgaes = $this->_contentHelperData->getExcludedPages($store);
-
         if (!empty($cPgaes)) {
             foreach ($cPgaes as $key => $cvalue) {
                 $pageids[]  = (int)$cvalue['cmspages'];
@@ -241,7 +223,6 @@ class Content extends \Klevu\Search\Model\Product\Sync
                     'store_id'=> $store->getId(),
                     'type' => "pages",
                 ]),
-
             'update' =>
                     $this->_frameworkModelResource->getConnection("core_write")
                         ->select()
@@ -269,7 +250,6 @@ class Content extends \Klevu\Search\Model\Product\Sync
                     'store_id' => $store->getId(),
                     'type'=> "pages",
                     ]),
-
                     'add' =>  $this->_frameworkModelResource->getConnection("core_write")
                         ->select()
                         ->union([
@@ -361,7 +341,6 @@ class Content extends \Klevu\Search\Model\Product\Sync
                     'store_id'=> $store->getId(),
                     'type' => "pages",
                 ]),
-
             'update' =>
                     $this->_frameworkModelResource->getConnection("core_write")
                         ->select()
@@ -389,7 +368,6 @@ class Content extends \Klevu\Search\Model\Product\Sync
                     'store_id' => $store->getId(),
                     'type'=> "pages",
                     ]),
-
                     'add' =>  $this->_frameworkModelResource->getConnection("core_write")
                         ->select()
                         ->union([
@@ -565,7 +543,6 @@ class Content extends \Klevu\Search\Model\Product\Sync
                     $query = "replace into ".$this->_frameworkModelResource->getTableName('klevu_product_sync')
                            . "(product_id, parent_id, store_id, last_synced_at, type) values "
                            . "(:product_id, :parent_id, :store_id, :last_synced_at, :type)";
-
                     $binds = [
                         'product_id' => $value[0],
                         'parent_id' => $value[1],
