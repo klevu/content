@@ -96,7 +96,7 @@ class Content extends \Klevu\Search\Model\Product\Sync
         $this->_apiActionStartsession = $apiActionStartsession;
         $this->_cronModelSchedule = $cronModelSchedule;
         $this->_ProductMetadataInterface = $productMetadataInterface;
-        if ($this->_ProductMetadataInterface->getEdition() == "Enterprise" && version_compare($this->_ProductMetadataInterface->getVersion(), '2.0.8', '>')===true) {
+        if (in_array($this->_ProductMetadataInterface->getEdition(),array("Enterprise","B2B")) && version_compare($this->_ProductMetadataInterface->getVersion(), '2.1.0', '>=')===true) {
             $this->_page_value = "row_id";
         } else {
             $this->_page_value = "page_id";
@@ -181,8 +181,8 @@ class Content extends \Klevu\Search\Model\Product\Sync
         $this->_storeModelStoreManagerInterface->setCurrentStore($store->getId());
         $this->log(\Zend\Log\Logger::INFO, sprintf("Starting Cms sync for %s (%s).", $store->getWebsite()->getName(), $store->getName()));
         
-        if ($this->_ProductMetadataInterface->getEdition() == "Enterprise" && version_compare($this->_ProductMetadataInterface->getVersion(), '2.0.8', '>')===true) {
-            $actions = [
+        if (in_array($this->_ProductMetadataInterface->getEdition(),array("Enterprise","B2B")) && version_compare($this->_ProductMetadataInterface->getVersion(), '2.1.0', '>=')===true) {
+		$actions = [
             'delete' => $this->_frameworkModelResource->getConnection("core_write")
                 ->select()
                 /*
@@ -494,6 +494,7 @@ class Content extends \Klevu\Search\Model\Product\Sync
                 return true;
             }
         } else {
+			$this->_searchModelSession->setKlevuFailedFlag(1);
             return sprintf("%d cms%s failed (%s)", $total, ($total > 1) ? "s" : "", $response->getMessage());
         }
     }
@@ -561,6 +562,7 @@ class Content extends \Klevu\Search\Model\Product\Sync
                 return true;
             }
         } else {
+			$this->_searchModelSession->setKlevuFailedFlag(1);
             return sprintf("%d cms%s failed (%s)", $total, ($total > 1) ? "s" : "", $response->getMessage());
         }
     }
@@ -653,6 +655,7 @@ class Content extends \Klevu\Search\Model\Product\Sync
                 return true;
             }
         } else {
+			$this->_searchModelSession->setKlevuFailedFlag(1);
             return sprintf("%d cms%s failed (%s)", $total, ($total > 1) ? "s" : "", $response->getMessage());
         }
     }
