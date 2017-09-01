@@ -174,10 +174,15 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getExcludedPages($store = null)
     {
-        $values = unserialize($this->_appConfigScopeConfigInterface->getValue(static ::XML_PATH_EXCLUDEDCMS_PAGES, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $store));
-        if (is_array($values)) {
-            return $values;
-        }
+		$exclude_cms = $this->_appConfigScopeConfigInterface->getValue(static ::XML_PATH_EXCLUDEDCMS_PAGES, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $store);
+		if($exclude_cms != "[]") {
+			if(!empty($exclude_cms)) {
+				$values = unserialize($exclude_cms);
+				if (is_array($values)) {
+					return $values;
+				}
+			}
+		}
         return [];
     }
     

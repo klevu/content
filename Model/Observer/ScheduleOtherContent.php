@@ -25,6 +25,7 @@ class ScheduleOtherContent implements ObserverInterface
 
     public function __construct(
         \Klevu\Content\Helper\Data $contentHelperData,
+	    \Klevu\Search\Helper\Config $contentHelperConfig,
         \Klevu\Content\Model\Content $contentModelContent,
         \Magento\Backend\Model\Session $backendModelSession
     ) {
@@ -32,6 +33,8 @@ class ScheduleOtherContent implements ObserverInterface
         $this->_contentHelperData = $contentHelperData;
         $this->_contentModelContent = $contentModelContent;
         $this->_backendModelSession = $backendModelSession;
+		$this->_contentHelperConfig = $contentHelperConfig;
+		
     }
 
     /**
@@ -41,6 +44,8 @@ class ScheduleOtherContent implements ObserverInterface
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
-        $this->_contentModelContent->schedule();
+		if($this->_contentHelperConfig->isExternalCronEnabled()) {
+			$this->_contentModelContent->schedule();
+		}
     }
 }
