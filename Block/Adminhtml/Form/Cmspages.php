@@ -20,7 +20,7 @@ class Cmspages extends \Magento\Config\Block\System\Config\Form\Field\FieldArray
         $cms_pages = $this->_cmsModelPage->getCollection()->addFieldToSelect(["page_id","title"])->addFieldToFilter('is_active', 1);
         $page_ids = $cms_pages->getData();
         foreach ($page_ids as $id) {
-            $cmsOptions[$id['page_id']] = $id['title'];
+            $cmsOptions[$id['page_id']] = addslashes($id['title']);
         }
         if (!$this->_pageRenderer) {
             $this->_pageRenderer = $this->getLayout()->createBlock(
