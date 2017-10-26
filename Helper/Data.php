@@ -7,8 +7,13 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @var \Magento\Framework\App\RequestInterface
      */
     protected $_frameworkAppRequestInterface;
+	
+	/**
+     * @var \Magento\Framework\App\RequestInterface
+     */
+    protected $_catalogSearchHelper;
 
-    /**
+	/**
      * @var \Klevu\Search\Helper\Config
      */
     protected $_searchHelperConfig;
@@ -39,7 +44,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         \Klevu\Search\Model\Api\Action\Idsearch $apiActionIdsearch,
         \Klevu\Search\Helper\Data $searchHelperData,
         \Klevu\Search\Model\Api\Action\Searchtermtracking $apiActionSearchtermtracking,
-        \Magento\Framework\App\Config\ScopeConfigInterface $appConfigScopeConfigInterface
+        \Magento\Framework\App\Config\ScopeConfigInterface $appConfigScopeConfigInterface,
+		\Magento\CatalogSearch\Helper\Data $catalogSearchHelper
     ) {
     
         $this->_frameworkAppRequestInterface = $frameworkAppRequestInterface;
@@ -48,6 +54,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $this->_searchHelperData = $searchHelperData;
         $this->_apiActionSearchtermtracking = $apiActionSearchtermtracking;
         $this->_appConfigScopeConfigInterface = $appConfigScopeConfigInterface;
+		$this->_catalogSearchHelper = $catalogSearchHelper;
     }
 
     protected $_klevu_Content_parameters;
@@ -65,7 +72,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public function getContentSearchFilters()
     {
         if (empty($this->_klevu_Content_parameters)) {
-            $q = $this->_frameworkAppRequestInterface->getParam('q');
+            $q = $this->_catalogSearchHelper->getEscapedQueryText();
             $this->_klevu_Content_parameters = [
                 'ticket' => $this->_searchHelperConfig->getJsApiKey() ,
                 'noOfResults' => 1000,
@@ -100,7 +107,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getContentSearchTracking($noOfTrackingResults, $queryType)
     {
-        $q = $this->_frameworkAppRequestInterface->getParam('q');
+        $q = $this->_catalogSearchHelper->getEscapedQueryText();
         $this->_klevu_tracking_parameters = [
             'klevu_apiKey' => $this->_searchHelperConfig->getJsApiKey(),
             'klevu_term' => $q,
