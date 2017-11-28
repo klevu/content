@@ -2,8 +2,8 @@
 $config = \Magento\Framework\App\ObjectManager::getInstance()->get('Klevu\Content\Helper\Data');
 if ($config->isCmsSyncEnabledOnFront()) {?>
     <?php
-        $url = $block->getUrl('catalogsearch/result/')."?q=".\Magento\Framework\App\ObjectManager::getInstance()->get('Magento\Framework\App\RequestInterface')->getParam("q");
-        $url_content = $block->getUrl('content/search')."?q=".\Magento\Framework\App\ObjectManager::getInstance()->get('Magento\Framework\App\RequestInterface')->getParam("q");
+        $url = $block->getUrl('catalogsearch/result/')."?q=".\Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\CatalogSearch\Helper\Data')->getEscapedQueryText();
+        $url_content = $block->getUrl('content/search')."?q=".\Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\CatalogSearch\Helper\Data')->getEscapedQueryText();
     ?>
     <div class="page-title">
     <?php $selected_tab = \Magento\Framework\App\ObjectManager::getInstance()->get('Magento\Framework\App\RequestInterface')->getModuleName(); ?>
