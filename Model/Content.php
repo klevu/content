@@ -7,6 +7,8 @@ use \Magento\Framework\Stdlib\DateTime\DateTime;
 use \Klevu\Search\Model\Api\Action\Startsession;
 use \Klevu\Search\Model\Api\Action\Deleterecords;
 use \Klevu\Search\Model\Api\Action\Updaterecords;
+use \Klevu\Search\Model\Sync as KlevuSync;
+
 class Content extends \Klevu\Search\Model\Product\Sync
 {
     /**
@@ -65,6 +67,8 @@ class Content extends \Klevu\Search\Model\Product\Sync
      * @var \Magento\Cron\Model\Schedule
      */
     protected $_cronModelSchedule;
+    protected $_klevuSyncModel;
+
     public function __construct(
         \Magento\Framework\App\ResourceConnection $frameworkModelResource,
         \Magento\Backend\Model\Session $searchModelSession,
@@ -79,9 +83,13 @@ class Content extends \Klevu\Search\Model\Product\Sync
         \Klevu\Search\Helper\Config $searchHelperConfig,
         \Klevu\Search\Model\Api\Action\Startsession $apiActionStartsession,
         \Magento\Cron\Model\Schedule $cronModelSchedule,
-        \Magento\Framework\App\ProductMetadataInterface $productMetadataInterface
+        \Magento\Framework\App\ProductMetadataInterface $productMetadataInterface,
+         KlevuSync $klevuSyncModel
+
     ) {
-    
+        $this->_klevuSyncModel = $klevuSyncModel;
+        $this->_klevuSyncModel->setJobCode($this->getJobCode());
+
         $this->_frameworkModelResource = $frameworkModelResource;
         $this->_searchModelSession = $searchModelSession;
         $this->_storeModelStoreManagerInterface = $storeModelStoreManagerInterface;

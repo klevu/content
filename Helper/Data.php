@@ -134,14 +134,26 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             if (!$this->getKlevuResponse()->hasData('result')) {
                 return [];
             }
+            $oneresult = array();
             foreach ($this->getKlevuResponse()->getData('result') as $key => $value) {
-                $value["name"] = $value['name'];
-                $value["url"] = $value["url"];
-                if (!empty($value['shortDesc'])) {
-                    $value["shortDesc"] = $value['shortDesc'];
+                if (isset($value['name'])) {
+                    $value["name"] = $value["name"];
+                    $value["url"] = $value["url"];
+                    if (!empty($value['shortDesc'])) {
+                        $value["shortDesc"] = $value['shortDesc'];
+                    }
+                    $cms_data[] = $value;
+                } else {
+                    switch ($key){
+                        case "name": $oneresult['name'] = $value;break;
+                        case "url": $oneresult['url'] = $value;break;
+                        case "shortDesc":
+                            if (!empty($value)) $oneresult['shortDesc'] = $value;
+                            break;
+                    }
                 }
-                $cms_data[] = $value;
             }
+            if(isset( $oneresult['name']) && isset( $oneresult['url'])) $cms_data[] = $oneresult;
             $this->_klevu_Cms_Data = $cms_data;
             
             $response_meta = $this->getKlevuResponse()->getData('meta');
