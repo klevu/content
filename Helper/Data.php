@@ -1,13 +1,14 @@
 <?php
 namespace Klevu\Content\Helper;
 
+
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
     /**
      * @var \Magento\Framework\App\RequestInterface
      */
     protected $_frameworkAppRequestInterface;
-	
+
 	/**
      * @var \Magento\Framework\App\RequestInterface
      */
@@ -38,6 +39,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     protected $_appConfigScopeConfigInterface;
 
+
     public function __construct(
         \Magento\Framework\App\RequestInterface $frameworkAppRequestInterface,
         \Klevu\Search\Helper\Config $searchHelperConfig,
@@ -47,7 +49,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Framework\App\Config\ScopeConfigInterface $appConfigScopeConfigInterface,
 		\Magento\CatalogSearch\Helper\Data $catalogSearchHelper
     ) {
-    
+
         $this->_frameworkAppRequestInterface = $frameworkAppRequestInterface;
         $this->_searchHelperConfig = $searchHelperConfig;
         $this->_apiActionIdsearch = $apiActionIdsearch;
@@ -60,7 +62,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     protected $_klevu_Content_parameters;
     protected $_klevu_Content_response;
     protected $_klevu_Cms_Data;
-    
+
     const XML_PATH_CMS_SYNC_ENABLED = "klevu_search/product_sync/enabledcms";
     const XML_PATH_EXCLUDED_CMS_PAGES = "klevu_search/cmscontent/excludecms";
     const XML_PATH_EXCLUDEDCMS_PAGES = "klevu_search/cmscontent/excludecms_pages";
@@ -100,7 +102,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         }
         return $this->_klevu_Content_response;
     }
-    
+
     /**
      * Return the Klevu api search filters
      * @return array
@@ -119,7 +121,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $this->log(\Zend\Log\Logger::DEBUG, sprintf("Content Search tracking for term: %s", $q));
         return $this->_klevu_tracking_parameters;
     }
-    
+
     /**
      * This method executes the the Klevu API request if it has not already been called, and takes the result
      * with the result
@@ -155,7 +157,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             }
             if(isset( $oneresult['name']) && isset( $oneresult['url'])) $cms_data[] = $oneresult;
             $this->_klevu_Cms_Data = $cms_data;
-            
+
             $response_meta = $this->getKlevuResponse()->getData('meta');
             $this->_apiActionSearchtermtracking->execute($this->getContentSearchTracking(count($this->_klevu_Cms_Data), $response_meta['typeOfQuery']));
             $this->log(\Zend\Log\Logger::DEBUG, sprintf("Cms count returned: %s", count($this->_klevu_Cms_Data)));
@@ -183,7 +185,21 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     {
         return $this->_appConfigScopeConfigInterface->getValue(static ::XML_PATH_EXCLUDED_CMS_PAGES, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $store);
     }
-    
+
+    /**
+     * Checks if the given value is json encoded
+     *
+     * @param  $sValue
+     * @return bool
+     */
+    public function isJson($sValue)
+    {
+        if (is_string($sValue) && is_array(json_decode($sValue, true)) && (json_last_error() == JSON_ERROR_NONE)) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Get excluded cms page for store.
      *
@@ -193,18 +209,22 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getExcludedPages($store = null)
     {
-		$exclude_cms = $this->_appConfigScopeConfigInterface->getValue(static ::XML_PATH_EXCLUDEDCMS_PAGES, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $store);
-		if($exclude_cms != "[]") {
-			if(!empty($exclude_cms)) {
-				$values = unserialize($exclude_cms);
-				if (is_array($values)) {
-					return $values;
-				}
-			}
-		}
+        $exclude_cms = $this->_appConfigScopeConfigInterface->getValue(static ::XML_PATH_EXCLUDEDCMS_PAGES, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $store);
+        if($exclude_cms != "[]") {
+            if(!empty($exclude_cms)) {
+                if ($this->isJson($exclude_cms)) {
+                    $values = json_decode($exclude_cms, true);
+                } else {
+                    $values = unserialize($exclude_cms);
+                }
+                if (is_array($values)) {
+                    return $values;
+                }
+            }
+        }
         return [];
     }
-    
+
     /**
      * Get value of cms synchronize for the given store.
      *
@@ -239,7 +259,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getCmsSyncEnabledOnFront($store = null)
     {
-        
+
         return (int)$this->_appConfigScopeConfigInterface->getValue(static ::XML_PATH_CMS_ENABLED_ON_FRONT, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $store);
     }
     /**
@@ -269,7 +289,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         if (empty($filters)) {
             return [];
         }
-        
+
         foreach ($filters as $filter) {
             foreach ($filter as $key => $filterData) {
                 if(!isset($filterData['@attributes'])) continue;
@@ -287,7 +307,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                                 'selected' => trim((string)$option['@attributes']['selected'])
                             ];
                         }
-                        
+
                         if (isset($option['name'])) {
                             $attributes[$key]['options'][] = [
                                 'label' => trim((string)$option['name']) ,
@@ -322,12 +342,12 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             }
             $this->log(\Zend\Log\Logger::DEBUG, sprintf('Active For Category Filters: %s', var_export($prepared_filters, true)));
             return implode(';;', array_map(function ($v, $k) {
-            
+
                 return sprintf('%s:%s', $k, $v);
             }, $prepared_filters, array_keys($prepared_filters)));
         }
     }
-    
+
     /**
      * Return the Cms pages.
      *
@@ -340,7 +360,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $cmsmap = unserialize($this->_appConfigScopeConfigInterface->getValue(static::XML_PATH_EXCLUDEDCMS_PAGES, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $store));
         return (is_array($cmsmap)) ? $cmsmap : [];
     }
-    
+
     /**
      * set the Cms pages.
      *
@@ -354,7 +374,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $this->_searchHelperConfig->setStoreConfig(static::XML_PATH_EXCLUDEDCMS_PAGES, serialize($map), $store);
         return $this;
     }
-    
+
     /**
      * Remove html tags and replace it with space.
      *
@@ -364,18 +384,18 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function ripTags($string)
     {
-    
+
         // ----- remove HTML TAGs -----
         $string = preg_replace('/<[^>]*>/', ' ', $string);
-        
+
         // ----- remove control characters -----
         $string = str_replace("\r", '', $string);
         $string = str_replace("\n", ' ', $string);
         $string = str_replace("\t", ' ', $string);
-        
+
         // ----- remove multiple spaces -----
         $string = trim(preg_replace('/ {2,}/', ' ', $string));
-        
+
         return $string;
     }
 }
