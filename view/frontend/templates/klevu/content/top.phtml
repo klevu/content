@@ -1,9 +1,12 @@
 <?php
 $config = \Magento\Framework\App\ObjectManager::getInstance()->get('Klevu\Content\Helper\Data');
+
+$searchTerm = \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\CatalogSearch\Helper\Data')->getEscapedQueryText();
+
 if ($config->isCmsSyncEnabledOnFront()) {?>
     <?php
-        $url = $block->getUrl('catalogsearch/result/')."?q=".\Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\CatalogSearch\Helper\Data')->getEscapedQueryText();
-        $url_content = $block->getUrl('content/search')."?q=".\Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\CatalogSearch\Helper\Data')->getEscapedQueryText();
+        $url = $block->getUrl('catalogsearch/result/')."?q=".$searchTerm;
+        $url_content = $block->getUrl('content/search')."?q=".$searchTerm;
     ?>
     <div class="page-title">
     <?php $selected_tab = \Magento\Framework\App\ObjectManager::getInstance()->get('Magento\Framework\App\RequestInterface')->getModuleName(); ?>
@@ -14,3 +17,19 @@ if ($config->isCmsSyncEnabledOnFront()) {?>
 } ?>><?php echo __('Other content'); ?></a>
     </div>
 <?php } ?>
+
+<div id="klevuBannerAdLanding" class="kuBannerAd"></div>
+
+<script type="text/javascript">
+  var klevu_bannerTrials = 0;
+  var klevu_bannersTimer = setInterval(function () {
+    if( typeof klevu_banner !== 'undefined' && typeof klevu_commons !== 'undefined' ){
+      klevu_commons.showBannerAdForGivenTerm('<?php echo $searchTerm; ?>', 'klp' );
+      clearInterval(klevu_bannersTimer);
+    }
+    if (klevu_bannerTrials >= 10) {
+      clearInterval(klevu_bannersTimer);
+    }
+    klevu_bannerTrials++;
+  }, 500);
+</script>
