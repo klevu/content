@@ -14,7 +14,7 @@ class SyncOtherContent implements ObserverInterface
     protected $_contentHelperData;
 
     /**
-     * @var \Klevu\Content\Model\Content
+     * @var \Klevu\Content\Model\ContentInterface
      */
     protected $_contentModelContent;
 
@@ -25,7 +25,7 @@ class SyncOtherContent implements ObserverInterface
 
     public function __construct(
         \Klevu\Content\Helper\Data $contentHelperData,
-        \Klevu\Content\Model\Content $contentModelContent,
+        \Klevu\Content\Model\ContentInterface $contentModelContent,
         \Magento\Backend\Model\Session $backendModelSession
     ) {
     
