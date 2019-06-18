@@ -64,6 +64,7 @@ class LoadAttribute extends  AbstractModel
             $value["salePrice"] = 0;
             $value["currency"] = "USD";
             $value["inStock"] = "yes";
+			$value["visibility"] = "search";
             $cms_data_new[] = $value;
         }
         return $cms_data_new;

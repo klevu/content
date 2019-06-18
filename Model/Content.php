@@ -471,6 +471,7 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
             $value["salePrice"] = 0;
             $value["currency"] = "USD";
             $value["inStock"] = "yes";
+			$value["visibility"] = "search";
             $cms_data_new[] = $value;
         }
         return $cms_data_new;

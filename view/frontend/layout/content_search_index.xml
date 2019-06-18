@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="2columns-left" xsi:noNamespaceSchemaLocation="../../../../../lib/internal/Magento/Framework/View/Layout/etc/page_configuration.xsd">
-    <body>
-	    <head>
-			<css src="Klevu_Contnet::klevu/content/klevu-landing-left.css"/>
-		</head>
+    <head>
+		<css src="Klevu_Content::css/klevu-landing-left.css"/>
+	</head>	
+	<body>	    
         <referenceBlock name="content">
 		    <block class="Klevu\Content\Block\Index" template="klevu/content/top.phtml" />
             <block class="Klevu\Content\Block\Index" template="klevu/content/index.phtml" name="content_index"/>

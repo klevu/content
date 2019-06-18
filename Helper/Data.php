@@ -293,7 +293,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         foreach ($filters as $filter) {
             foreach ($filter as $key => $filterData) {
                 if(!isset($filterData['@attributes'])) continue;
-                $key = (string)$filterData['@attributes']['key'];
+                if(!isset($filterData['@attributes']['key'])) continue;
+				$key = (string)$filterData['@attributes']['key'];
                 $attributes[$key] = [
                     'label' => (string)$filterData['@attributes']['label']
                 ];
