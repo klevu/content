@@ -447,6 +447,7 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
 	public function addcmsData(&$pages)
     {
         $page_ids = [];
+		$cms_data_new = [];
 		$page_ids = $pages;
         if ($this->_storeModelStoreManagerInterface->getStore()->isFrontUrlSecure()) {
             $base_url = $this->_storeModelStoreManagerInterface->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_LINK, true);
