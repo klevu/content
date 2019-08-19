@@ -2,7 +2,7 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="2columns-left" xsi:noNamespaceSchemaLocation="../../../../../lib/internal/Magento/Framework/View/Layout/etc/page_configuration.xsd">
     <body>
         <referenceBlock name="content">
-		    <block class="Klevu\Content\Block\Index" before="-" template="klevu/content/top.phtml" />
+		    <block class="Klevu\Content\Block\Index" name="klevu_content_top" before="-" template="klevu/content/top.phtml" />
         </referenceBlock>
     </body>
 </config>

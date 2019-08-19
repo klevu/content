@@ -5,7 +5,7 @@
 	</head>	
 	<body>	    
         <referenceBlock name="content">
-		    <block class="Klevu\Content\Block\Index" template="klevu/content/top.phtml" />
+		    <block class="Klevu\Content\Block\Index" name="klevu_top_content" template="klevu/content/top.phtml" />
             <block class="Klevu\Content\Block\Index" template="klevu/content/index.phtml" name="content_index"/>
         </referenceBlock>
 		<referenceBlock name="catalog.compare.sidebar" remove="true"/>
