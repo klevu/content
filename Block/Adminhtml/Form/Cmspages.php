@@ -1,6 +1,10 @@
 <?php
 namespace Klevu\Content\Block\Adminhtml\Form;
 
+use Magento\Backend\Block\Template\Context as Template_Context;
+use Magento\Store\Model\StoreManagerInterface as StoreManagerInterface;
+
+
 class Cmspages extends \Magento\Config\Block\System\Config\Form\Field\FieldArray\AbstractFieldArray
 {
     
@@ -9,6 +13,69 @@ class Cmspages extends \Magento\Config\Block\System\Config\Form\Field\FieldArray
      */
     protected $_pageRenderer;
 
+	/**
+     * @var Context
+     */
+	private $_context;
+
+	/**
+     * @var storeManager
+     */
+    private $storeManager;
+
+
+
+    public function __construct(
+        Template_Context $context,
+
+        array $data = []
+
+    ) {
+
+        parent::__construct($context,$data);
+        $this->_context = $context;
+
+    }
+	
+	/**
+     * Retrieve HTML markup for given form element
+     *
+     * @param \Magento\Framework\Data\Form\Element\AbstractElement $element
+     * @return string
+     */
+    public function render(\Magento\Framework\Data\Form\Element\AbstractElement $element)
+    {
+        $this->storeManager = $this->_context->getStoreManager();
+        $store_mode = $this->storeManager->isSingleStoreMode();
+        if(!$store_mode && $element->getScope() != "stores" && $element->getHtmlId() == 'klevu_search_cmscontent_excludecms_pages')  {
+            return;
+        }
+
+        return parent::render($element);
+    }
+
+
+    /**
+     * Check if inheritance checkbox has to be rendered
+     *
+     * @param \Magento\Framework\Data\Form\Element\AbstractElement $element
+     * @return bool
+     */
+    protected function _isInheritCheckboxRequired(\Magento\Framework\Data\Form\Element\AbstractElement $element)
+    {
+        $this->storeManager = $this->_context->getStoreManager();
+        $store_mode = $this->storeManager->isSingleStoreMode();
+
+        if(!$store_mode && $element->getScope() == "stores" && $element->getHtmlId() == 'klevu_search_cmscontent_excludecms_pages')  {
+            return;
+        }
+
+        return $element->getCanUseWebsiteValue()
+            || $element->getCanUseDefaultValue()
+            || $element->getCanRestoreToDefault();
+    }
+	
+	
     /**
      * Retrieve page column renderer
      *

@@ -278,7 +278,7 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
 		$klevuToUpdate = array();
 		$klevu = $this->_klevuFactory->create();
 		$klevuCollection = $klevu->getCollection()
-            ->addFieldToFilter($klevu->getKlevuField('type'), $klevu->getKlevuType('product'))
+            ->addFieldToFilter($klevu->getKlevuField('type'), $klevu->getKlevuType('page'))
             ->addFieldToFilter($klevu->getKlevuField('store_id'), $store->getid())
             ->join(
                 ['cms_page' => $this->_frameworkModelResource->getTableName('cms_page')],
