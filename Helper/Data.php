@@ -131,6 +131,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getCmsData()
     {
+		$cms_data = [];
         if (empty($this->_klevu_Cms_Data)) {
             // If no results, return an empty array
             if (!$this->getKlevuResponse()->hasData('result')) {

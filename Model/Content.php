@@ -177,7 +177,7 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
         if ($this->rescheduleIfOutOfMemory()) {
             return;
         }
-        
+        $page_ids = [];		
         
         $this->_storeModelStoreManagerInterface->setCurrentStore($store->getId());
         $this->log(\Zend\Log\Logger::INFO, sprintf("Starting Cms sync for %s (%s).", $store->getWebsite()->getName(), $store->getName()));
@@ -322,6 +322,7 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
      */
     protected function deletecms(array $data)
     {
+		$format_data = [];
 		foreach($data as $key => $value)
 		{
 			$format_data[]['page_id'] = $value;
