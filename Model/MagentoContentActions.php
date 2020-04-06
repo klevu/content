@@ -69,7 +69,7 @@ class MagentoContentActions extends AbstractModel
             'delete' => $this->_frameworkModelResource->getConnection("core_write")
                 ->select()
                 /*
-                 * Select synced cms in the current store/mode that 
+                 * Select synced cms in the current store/mode that
                  * are no longer enabled
                  */
                 ->from(
@@ -191,7 +191,7 @@ class MagentoContentActions extends AbstractModel
             'delete' => $this->_frameworkModelResource->getConnection("core_write")
                 ->select()
                 /*
-                 * Select synced cms in the current store/mode that 
+                 * Select synced cms in the current store/mode that
                  * are no longer enabled
                  */
                 ->from(
@@ -321,10 +321,10 @@ class MagentoContentActions extends AbstractModel
     public function deletecms(array $data)
     {
         $total = count($data);
-        $response = $this->_apiActionDeleterecords->setStore($this->getStore())->execute([
+        $response = $this->_apiActionDeleterecords->setStore($this->_storeModelStoreManagerInterface->getStore())->execute([
             'sessionId' => $this->getSessionId() ,
             'records' => array_map(function ($v) {
-            
+
                 return [
                     'id' => "pageid_" . $v['page_id']
                 ];
@@ -337,8 +337,8 @@ class MagentoContentActions extends AbstractModel
             return sprintf("%d cms%s failed (%s)", $total, ($total > 1) ? "s" : "", $response->getMessage());
         }
     }
-	
-	
+
+
 	/**
      * Update the given pages on Klevu Search. Returns true if the operation was successful,
      * or the error message if it failed.
@@ -353,7 +353,7 @@ class MagentoContentActions extends AbstractModel
     {
         $total = count($data);
         $data = $this->_loadAttribute->addCmsData($data);
-        $response = $this->_apiActionUpdaterecords->setStore($this->getStore())->execute([
+        $response = $this->_apiActionUpdaterecords->setStore($this->_storeModelStoreManagerInterface->getStore())->execute([
             'sessionId' => $this->getSessionId() ,
             'records' => $data
         ]);
@@ -364,7 +364,7 @@ class MagentoContentActions extends AbstractModel
             return sprintf("%d cms%s failed (%s)", $total, ($total > 1) ? "s" : "", $response->getMessage());
         }
     }
-    
+
     /**
      * Add the given pages to Klevu Search. Returns true if the operation was successful,
      * or the error message if it failed.
@@ -379,7 +379,7 @@ class MagentoContentActions extends AbstractModel
     {
         $total = count($data);
         $data = $this->_loadAttribute->addCmsData($data);
-        $response = $this->_apiActionAddrecords->setStore($this->getStore())->execute([
+        $response = $this->_apiActionAddrecords->setStore($this->_storeModelStoreManagerInterface->getStore())->execute([
             'sessionId' => $this->getSessionId() ,
             'records' => $data
         ]);
@@ -390,6 +390,7 @@ class MagentoContentActions extends AbstractModel
             return sprintf("%d cms%s failed (%s)", $total, ($total > 1) ? "s" : "", $response->getMessage());
         }
     }
-	
+
 
 }
+
