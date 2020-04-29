@@ -182,7 +182,7 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
         $this->_storeModelStoreManagerInterface->setCurrentStore($store->getId());
         $this->log(\Zend\Log\Logger::INFO, sprintf("Starting Cms sync for %s (%s).", $store->getWebsite()->getName(), $store->getName()));
    
-		$actions = array('add','update','delete');
+	$actions = array('delete','update','add');
         $errors = 0;
         foreach ($actions as $key => $action) {
             if ($this->rescheduleIfOutOfMemory()) {
