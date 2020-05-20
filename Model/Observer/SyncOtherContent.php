@@ -1,9 +1,8 @@
 <?php
+
 namespace Klevu\Content\Model\Observer;
 
-use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
-use Magento\Framework\View\Layout\Interceptor;
 
 class SyncOtherContent implements ObserverInterface
 {
@@ -27,8 +26,9 @@ class SyncOtherContent implements ObserverInterface
         \Klevu\Content\Helper\Data $contentHelperData,
         \Klevu\Content\Model\ContentInterface $contentModelContent,
         \Magento\Backend\Model\Session $backendModelSession
-    ) {
-    
+    )
+    {
+
         $this->_contentHelperData = $contentHelperData;
         $this->_contentModelContent = $contentModelContent;
         $this->_backendModelSession = $backendModelSession;

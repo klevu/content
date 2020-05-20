@@ -10,7 +10,7 @@ class LoadAttribute extends  AbstractModel
 {
 
     public function __construct(
-        \Klevu\Search\Model\Context $context,      
+        \Klevu\Search\Model\Context $context,
 		Category $catalogModelCategory
     ){
         $this->_storeModelStoreManagerInterface = $context->getStoreManagerInterface();
@@ -34,7 +34,7 @@ class LoadAttribute extends  AbstractModel
      *
      * @return $this
      */
-	public function addcmsData(&$pages)
+	public function addCmsData(&$pages)
     {
         $page_ids = [];
         $cms_data_new = [];
@@ -55,7 +55,7 @@ class LoadAttribute extends  AbstractModel
             $value["desc"] = $value["content"];
             $value["id"] = "pageid_" . $value["page_id"];
             $value["url"] = $base_url . $value["identifier"];
-            $desc = preg_replace("/<script\b[^>]*>(.*?)<\/script>/is", "", html_entity_decode($value["content"])); 
+            $desc = preg_replace("/<script\b[^>]*>(.*?)<\/script>/is", "", html_entity_decode($value["content"]));
             $value["desc"] = preg_replace('#\{{.*?\}}#s', '', strip_tags($this->_contentHelperData->ripTags($desc)));
             $value["metaDesc"] = $value["meta_description"] . $value["meta_keywords"];
             $value["shortDesc"] = substr(preg_replace('#\{{.*?\}}#s', '', strip_tags($this->_contentHelperData->ripTags($desc))), 0, 200);

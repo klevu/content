@@ -1,16 +1,20 @@
-<?php $config = \Magento\Framework\App\ObjectManager::getInstance()->get('Klevu\Search\Helper\Config'); ?>
-<?php if ($config->isExtensionConfigured()) :?>
+<?php
+/**
+ * Content template for KLEVU CMS variables
+ *
+ * @var $block \Klevu\Content\Block\QueryType
+ */
+?>
+<?php if ($block->isExtensionConfigured()):?>
 <script type="text/javascript">
     var klevu_cms_module_enabled=true;
 </script>
 <?php endif; ?>
 <script type="text/javascript">
-// Enable cms for klevu template
-<?php
-    $content = \Magento\Framework\App\ObjectManager::getInstance()->get('Klevu\Content\Helper\Data');
-if ($content->isCmsSyncEnabledOnFront()) { ?>
-        var klevu_cmsSearchEnabled = true;
-    <?php     } else {?>
-        var klevu_cmsSearchEnabled = false;
-    <?php } ?>      
+// Enable CMS for klevu template
+<?php if ($block->isCmsSyncEnabledOnFront()): ?>
+	var klevu_cmsSearchEnabled = true;
+<?php else: ?>
+	var klevu_cmsSearchEnabled = false;
+<?php endif; ?>     
 </script>

@@ -1,17 +1,17 @@
-<?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="2columns-left" xsi:noNamespaceSchemaLocation="../../../../../lib/internal/Magento/Framework/View/Layout/etc/page_configuration.xsd">
-    <head>
-		<css src="Klevu_Content::css/klevu-landing-left.css"/>
-	</head>	
-	<body>	    
-        <referenceBlock name="content">
-		    <block class="Klevu\Content\Block\Index" name="klevu_top_content" template="klevu/content/top.phtml" />
-            <block class="Klevu\Content\Block\Index" template="klevu/content/index.phtml" name="content_index"/>
-        </referenceBlock>
-		<referenceBlock name="catalog.compare.sidebar" remove="true"/>
-		<referenceContainer name="wishlist_sidebar" remove="true" />
-		<referenceContainer name="sidebar.additional">
-			<block class="Klevu\Content\Block\Index" template="klevu/content/left.phtml" name="content_left"/>
-        </referenceContainer>
-    </body>
-</config>
+<?xml version="1.0" encoding="UTF-8"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="2columns-left" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+   <head>
+      <css src="Klevu_Content::css/klevu-landing-left.css" />
+   </head>
+   <body>
+      <referenceBlock name="content">
+         <block class="Klevu\Content\Block\Index" template="Klevu_Content::klevu/content/top.phtml" name="klevu_content_top" />
+         <block class="Klevu\Content\Block\Index" template="Klevu_Content::klevu/content/index.phtml" name="klevu_content_index" />
+      </referenceBlock>
+      <referenceBlock name="catalog.compare.sidebar" remove="true" />
+      <referenceContainer name="wishlist_sidebar" remove="true" />
+      <referenceContainer name="sidebar.additional">
+         <block class="Klevu\Content\Block\Index" template="Klevu_Content::klevu/content/left.phtml" name="klevu_content_left" />
+      </referenceContainer>
+   </body>
+</page>

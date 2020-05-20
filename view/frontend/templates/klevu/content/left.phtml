@@ -1,34 +1,38 @@
-<?php $contentFilters = $block->getContentFilters();
-if (count($contentFilters)> 0) {
+<?php
+/**
+ * Content left facets template
+ *
+ * @var $block \Klevu\Content\Block\Index
+ */
 ?>
+<?php $contentFilters = $block->getContentFilters();
+$queryParam = $block->getQueryParam(); ?>
+<?php if (count($contentFilters)> 0): ?>
 <div class="col-left-first">
    <div class="block block-layered-nav">
     <div class="block-content toggle-content">
          <dl id="narrow-by-list">
-            <dt class="odd"><?php echo __("Type"); ?></dt>
+            <dt class="odd"><?php /* @escapeNotVerified */ echo __("Type"); ?></dt>
             <dd class="odd">
                <ol>
-                    <?php
-                    foreach ($contentFilters["category"]["options"] as $key => $value) {
-                        $url_content = $block->getUrl('content/search', ["q" => \Magento\Framework\App\ObjectManager::getInstance()->get('Magento\Framework\App\RequestInterface')->getParam("q")]);
-                    ?>
+                    <?php foreach ($contentFilters["category"]["options"] as $key => $value): ?>
+                    <?php $url_content = $block->getUrl('content/search', ["q" => $queryParam]); ?> 
+					<?php $label = $value["label"]; ?>					
                     <li class="kuFilterSelect">
-                        <a href="<?php echo $url_content."?cat=".strtolower($value["label"]);?>" class="kuFilterLbl">
-                            <?php echo $value["label"]; ?><span class="count"> (<?php echo $value["count"]; ?>)</span>
+                        <a href="<?php /* @escapeNotVerified */ echo $url_content."?cat=".strtolower($block->escapeHtml($label));?>" class="kuFilterLbl">
+                            <?php echo $block->escapeHtml($label); ?><span class="count"> (<?php /* @escapeNotVerified */ echo $value["count"]; ?>)</span>
                             
                         </a>
                         <?php if ($value["selected"]=="true") { ?>
-                              <a href="<?php echo $url_content;?>" class="kuFilterClose">X</a>
+                              <a href="<?php /* @escapeNotVerified */ echo $url_content;?>" class="kuFilterClose">X</a>
                         <?php } ?>
                     </li>
                     <div class="kuClrFilterBoth"></div>
-                    <?php                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         } ?>
+					<?php endforeach; ?>              
                </ol>
-            </dd>
-            </ol>
-            </dd>
+            </dd>             
          </dl>
       </div>
    </div>
 </div>
-<?php } ?>
+<?php endif; ?>

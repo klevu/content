@@ -1,9 +1,8 @@
 <?php
+
 namespace Klevu\Content\Model\Observer;
 
-use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
-use Magento\Framework\View\Layout\Interceptor;
 
 class ScheduleOtherContent implements ObserverInterface
 {
@@ -25,16 +24,17 @@ class ScheduleOtherContent implements ObserverInterface
 
     public function __construct(
         \Klevu\Content\Helper\Data $contentHelperData,
-	    \Klevu\Search\Helper\Config $contentHelperConfig,
+        \Klevu\Search\Helper\Config $contentHelperConfig,
         \Klevu\Content\Model\ContentInterface $contentModelContent,
         \Magento\Backend\Model\Session $backendModelSession
-    ) {
-    
+    )
+    {
+
         $this->_contentHelperData = $contentHelperData;
         $this->_contentModelContent = $contentModelContent;
         $this->_backendModelSession = $backendModelSession;
-		$this->_contentHelperConfig = $contentHelperConfig;
-		
+        $this->_contentHelperConfig = $contentHelperConfig;
+
     }
 
     /**
@@ -44,8 +44,8 @@ class ScheduleOtherContent implements ObserverInterface
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
-		if($this->_contentHelperConfig->isExternalCronEnabled()) {
-			$this->_contentModelContent->schedule();
-		}
+        if ($this->_contentHelperConfig->isExternalCronEnabled()) {
+            $this->_contentModelContent->schedule();
+        }
     }
 }

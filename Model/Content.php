@@ -1,15 +1,10 @@
 <?php
+
 namespace Klevu\Content\Model;
-use \Klevu\Search\Model\Sync;
-use \Klevu\Search\Helper\Config;
-use \Magento\Framework\App\Config\ScopeConfigInterface;
-use \Magento\Framework\Stdlib\DateTime\DateTime;
-use \Klevu\Search\Model\Api\Action\Startsession;
-use \Klevu\Search\Model\Api\Action\Deleterecords;
-use \Klevu\Search\Model\Api\Action\Updaterecords;
-use \Klevu\Search\Model\Sync as KlevuSync;
+
 use Klevu\Search\Model\Klevu\KlevuFactory as Klevu_Factory;
 use Klevu\Search\Model\Product\KlevuProductActionsInterface as Klevu_Product_Actions;
+use Klevu\Search\Model\Sync as KlevuSync;
 
 class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterface
 {
@@ -53,18 +48,18 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
      * @var \Klevu\Search\Helper\Data
      */
     protected $_searchHelperData;
-    
+
     /**
      * @var \Klevu\Search\Helper\Config
      */
     protected $_searchHelperConfig;
-    
-    
+
+
     /**
      * @var \Klevu\Search\Model\Api\Action\Startsession
      */
     protected $_apiActionStartsession;
-    
+
     /**
      * @var \Magento\Cron\Model\Schedule
      */
@@ -86,15 +81,16 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
         \Klevu\Search\Model\Api\Action\Startsession $apiActionStartsession,
         \Magento\Cron\Model\Schedule $cronModelSchedule,
         \Magento\Framework\App\ProductMetadataInterface $productMetadataInterface,
-		Klevu_Factory $klevuFactory,
+        Klevu_Factory $klevuFactory,
         KlevuSync $klevuSyncModel,
-		Klevu_Product_Actions $klevuProductActions
-		 
+        Klevu_Product_Actions $klevuProductActions
 
-    ) {
+
+    )
+    {
         $this->_klevuSyncModel = $klevuSyncModel;
         $this->_klevuSyncModel->setJobCode($this->getJobCode());
-		$this->_klevuFactory = $klevuFactory;
+        $this->_klevuFactory = $klevuFactory;
         $this->_frameworkModelResource = $frameworkModelResource;
         $this->_searchModelSession = $searchModelSession;
         $this->_storeModelStoreManagerInterface = $storeModelStoreManagerInterface;
@@ -109,13 +105,14 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
         $this->_apiActionStartsession = $apiActionStartsession;
         $this->_cronModelSchedule = $cronModelSchedule;
         $this->_ProductMetadataInterface = $productMetadataInterface;
-		$this->_klevuProductActions = $klevuProductActions;
-        if (in_array($this->_ProductMetadataInterface->getEdition(),array("Enterprise","B2B")) && version_compare($this->_ProductMetadataInterface->getVersion(), '2.1.0', '>=')===true) {
+        $this->_klevuProductActions = $klevuProductActions;
+        if (in_array($this->_ProductMetadataInterface->getEdition(), array("Enterprise", "B2B")) && version_compare($this->_ProductMetadataInterface->getVersion(), '2.1.0', '>=') === true) {
             $this->_page_value = "row_id";
         } else {
             $this->_page_value = "page_id";
         }
     }
+
     public function _construct()
     {
         parent::_construct();
@@ -123,17 +120,19 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
             "connection" => $this->_frameworkModelResource->getConnection("core_write")
         ]);
     }
+
     public function getJobCode()
     {
         return "klevu_search_content_sync";
     }
+
     /**
      * Perform Content Sync on any configured stores, adding new content, updating modified and
      * deleting removed content since last sync.
      */
     public function run()
     {
-  
+
         // Sync Data only for selected store from config wizard
         $session = $this->_searchModelSession;
         $firstSync = $session->getFirstSync();
@@ -149,13 +148,13 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
             $this->syncCmsData($onestore);
             return;
         }
-        
+
         if ($this->isRunning(2)) {
             // Stop if another copy is already running
             $this->log(\Zend\Log\Logger::INFO, "Stopping because another copy is already running.");
             return;
         }
-        
+
         // Sync all store cms Data
         $stores = $this->_storeModelStoreManagerInterface->getStores();
         foreach ($stores as $store) {
@@ -170,35 +169,35 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
             $this->syncCmsData($store);
         }
     }
-    
+
     protected function syncCmsData($store)
     {
-    
+
         if ($this->rescheduleIfOutOfMemory()) {
             return;
         }
-        $page_ids = [];		
-        
+        $page_ids = [];
+
         $this->_storeModelStoreManagerInterface->setCurrentStore($store->getId());
         $this->log(\Zend\Log\Logger::INFO, sprintf("Starting Cms sync for %s (%s).", $store->getWebsite()->getName(), $store->getName()));
-   
-	$actions = array('delete','update','add');
+
+        $actions = array('delete', 'update', 'add');
         $errors = 0;
         foreach ($actions as $key => $action) {
             if ($this->rescheduleIfOutOfMemory()) {
                 return;
             }
-			if($action == 'add') {
-				$page_ids = $this->addPagesCollection($store);
-			}
-			
-			if($action == 'update') {
-				$page_ids = $this->updatePagesCollection($store);
-			}
-			
-			if($action == 'delete') {
-				$page_ids = $this->deletePagesCollection($store);
-			}
+            if ($action == 'add') {
+                $page_ids = $this->addPagesCollection($store);
+            }
+
+            if ($action == 'update') {
+                $page_ids = $this->updatePagesCollection($store);
+            }
+
+            if ($action == 'delete') {
+                $page_ids = $this->deletePagesCollection($store);
+            }
             $method = $action . "cms";
             $cms_pages = $page_ids;
             $total = count($cms_pages);
@@ -218,66 +217,70 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
         }
         $this->log(\Zend\Log\Logger::INFO, sprintf("Finished cms page sync for %s (%s).", $store->getWebsite()->getName(), $store->getName()));
     }
-	
-	
-	public function deletePagesCollection($store){
-		$k_pages = $this->getKlevuProductCollection($store);
-		$send_exluded_to_delete = array();
-		$k_page_ids = array();
-		$m_page_ids = array();
-		$to_detete = array();
-		$cms_ids = $this->_cmsModelPage->getCollection()->addFieldToSelect('page_id')->addStoreFilter($store->getId())->addFieldToFilter('is_active', 1)->getData();
-		foreach($cms_ids as $key => $value){
-			$m_page_ids[] = $value['page_id'];
-		}	
-		foreach($k_pages as $key => $value) {
-			$k_page_ids[] = $value['product_id'];
-		}
-		$pageids = $this->excludedPageIds($store);
-		// send exluded pages to delete if it is already added
-		$send_exludedpages_to_delete = array_intersect($k_page_ids,$pageids);
-		// ids exits in Klevu but not exits/or disabled in magento 
-		$pages_to_delete = array_diff($k_page_ids,$m_page_ids);
-		$to_detete = array_merge($pages_to_delete,$send_exludedpages_to_delete);		
-		return $to_detete;
-	
-	}
-	
-	protected function excludedPageIds($store){
-		$pageids = array();
-		$cPgaes = $this->_contentHelperData->getExcludedPages($store);
+
+
+    public function deletePagesCollection($store)
+    {
+        $k_pages = $this->getKlevuProductCollection($store);
+        $send_exluded_to_delete = array();
+        $k_page_ids = array();
+        $m_page_ids = array();
+        $to_detete = array();
+        $cms_ids = $this->_cmsModelPage->getCollection()->addFieldToSelect('page_id')->addStoreFilter($store->getId())->addFieldToFilter('is_active', 1)->getData();
+        foreach ($cms_ids as $key => $value) {
+            $m_page_ids[] = $value['page_id'];
+        }
+        foreach ($k_pages as $key => $value) {
+            $k_page_ids[] = $value['product_id'];
+        }
+        $pageids = $this->excludedPageIds($store);
+        // send exluded pages to delete if it is already added
+        $send_exludedpages_to_delete = array_intersect($k_page_ids, $pageids);
+        // ids exits in Klevu but not exits/or disabled in magento
+        $pages_to_delete = array_diff($k_page_ids, $m_page_ids);
+        $to_detete = array_merge($pages_to_delete, $send_exludedpages_to_delete);
+        return $to_detete;
+
+    }
+
+    protected function excludedPageIds($store)
+    {
+        $pageids = array();
+        $cPgaes = $this->_contentHelperData->getExcludedPages($store);
         if (!empty($cPgaes)) {
             foreach ($cPgaes as $key => $cvalue) {
-                $pageids[]  = (int)$cvalue['cmspages'];
+                $pageids[] = (int)$cvalue['cmspages'];
             }
         }
-		return $pageids;
-	}
-	
-	public function addPagesCollection($store){
-		$pageids = $this->excludedPageIds($store);
-		$pages_to_add = array();
-		$k_page_ids = array();
-		$m_page_ids = array();
-		$k_pages = $this->getKlevuProductCollection($store);
-		$cms_ids = $this->_cmsModelPage->getCollection()->addFieldToSelect('page_id')->addStoreFilter($store->getId())->addFieldToFilter('is_active', 1)->getData();
-		foreach($cms_ids as $key => $value){
-			$m_page_ids[] = $value['page_id'];
-		}
-		
-		$m_page_ids = array_diff($m_page_ids,$pageids);
-		
-		foreach($k_pages as $key => $value) {
-			$k_page_ids[] = $value['product_id'];
-		}
-		$pages_to_add = array_diff($m_page_ids,$k_page_ids);
-		return $pages_to_add;
-	}
-	
-	public function updatePagesCollection($store){
-		$klevuToUpdate = array();
-		$klevu = $this->_klevuFactory->create();
-		$klevuCollection = $klevu->getCollection()
+        return $pageids;
+    }
+
+    public function addPagesCollection($store)
+    {
+        $pageids = $this->excludedPageIds($store);
+        $pages_to_add = array();
+        $k_page_ids = array();
+        $m_page_ids = array();
+        $k_pages = $this->getKlevuProductCollection($store);
+        $cms_ids = $this->_cmsModelPage->getCollection()->addFieldToSelect('page_id')->addStoreFilter($store->getId())->addFieldToFilter('is_active', 1)->getData();
+        foreach ($cms_ids as $key => $value) {
+            $m_page_ids[] = $value['page_id'];
+        }
+
+        $m_page_ids = array_diff($m_page_ids, $pageids);
+
+        foreach ($k_pages as $key => $value) {
+            $k_page_ids[] = $value['product_id'];
+        }
+        $pages_to_add = array_diff($m_page_ids, $k_page_ids);
+        return $pages_to_add;
+    }
+
+    public function updatePagesCollection($store)
+    {
+        $klevuToUpdate = array();
+        $klevu = $this->_klevuFactory->create();
+        $klevuCollection = $klevu->getCollection()
             ->addFieldToFilter($klevu->getKlevuField('type'), $klevu->getKlevuType('page'))
             ->addFieldToFilter($klevu->getKlevuField('store_id'), $store->getid())
             ->join(
@@ -285,8 +288,8 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
                 "main_table." . $klevu->getKlevuField('product_id') . " = cms_page.page_id AND cms_page.update_time > main_table.last_synced_at",
                 ""
             );
-		        $klevuCollection->load();
-		
+        $klevuCollection->load();
+
         if ($klevuCollection->count() > 0) {
             foreach ($klevuCollection as $klevuItem) {
                 $klevuToUpdate[$klevuItem->getData($klevu->getKlevuField('product_id'))]["product_id"] = $klevuItem->getData($klevu->getKlevuField('product_id'));
@@ -294,22 +297,23 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
 
             }
         }
-		
+
         return $klevuToUpdate;
-	}
-	
-	
-	protected function getKlevuProductCollection($store){
-		$limit = $this->_klevuSyncModel->getSessionVariable("limit");
+    }
+
+
+    protected function getKlevuProductCollection($store)
+    {
+        $limit = $this->_klevuSyncModel->getSessionVariable("limit");
         $klevu = $this->_klevuFactory->create();
         $klevuCollection = $klevu->getCollection()
             ->addFieldToSelect($klevu->getKlevuField('product_id'))
             ->addFieldToSelect($klevu->getKlevuField('store_id'))
             ->addFieldToFilter($klevu->getKlevuField('type'), $klevu->getKlevuType('page'))
-            ->addFieldToFilter($klevu->getKlevuField('store_id'),$store->getId());
+            ->addFieldToFilter($klevu->getKlevuField('store_id'), $store->getId());
         return $klevuCollection->getData();
     }
-    
+
     /**
      * Delete the given pages from Klevu Search. Returns true if the operation was
      * successful, or the error message if the operation failed.
@@ -322,14 +326,13 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
      */
     protected function deletecms(array $data)
     {
-		$format_data = [];
-		foreach($data as $key => $value)
-		{
-			$format_data[]['page_id'] = $value;
-		}
+        $format_data = [];
+        foreach ($data as $key => $value) {
+            $format_data[]['page_id'] = $value;
+        }
         $total = count($format_data);
         $response = $this->_apiActionDeleterecords->setStore($this->_storeModelStoreManagerInterface->getStore())->execute([
-            'sessionId' => $this->_searchModelSession->getKlevuSessionId() ,
+            'sessionId' => $this->_searchModelSession->getKlevuSessionId(),
             'records' => array_map(function ($v) {
                 return [
                     'id' => "pageid_" . $v['page_id']
@@ -361,11 +364,11 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
                 return true;
             }
         } else {
-			$this->_searchModelSession->setKlevuFailedFlag(1);
+            $this->_searchModelSession->setKlevuFailedFlag(1);
             return sprintf("%d cms%s failed (%s)", $total, ($total > 1) ? "s" : "", $response->getMessage());
         }
     }
-    
+
     /**
      * Add the given pages to Klevu Search. Returns true if the operation was successful,
      * or the error message if it failed.
@@ -382,7 +385,7 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
         $total = count($data);
         $data = $this->addCmsData($data);
         $response = $this->_apiActionAddrecords->setStore($this->_storeModelStoreManagerInterface->getStore())->execute([
-            'sessionId' => $this->_searchModelSession->getKlevuSessionId() ,
+            'sessionId' => $this->_searchModelSession->getKlevuSessionId(),
             'records' => $data
         ]);
         if ($response->isSuccess()) {
@@ -400,29 +403,29 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
                 $record = [
                     $ids[$i][1],
                     0,
-                    $this->_storeModelStoreManagerInterface->getStore()->getId() ,
+                    $this->_storeModelStoreManagerInterface->getStore()->getId(),
                     $sync_time,
                     "pages"
                 ];
             }
-           
+
             if (!empty($data)) {
                 foreach ($data as $key => $value) {
-                    $write =  $this->_frameworkModelResource->getConnection("core_write");
-                    $query = "replace into ".$this->_frameworkModelResource->getTableName('klevu_product_sync')
-                           . "(product_id, parent_id, store_id, last_synced_at, type) values "
-                           . "(:product_id, :parent_id, :store_id, :last_synced_at, :type)";
+                    $write = $this->_frameworkModelResource->getConnection("core_write");
+                    $query = "replace into " . $this->_frameworkModelResource->getTableName('klevu_product_sync')
+                        . "(product_id, parent_id, store_id, last_synced_at, type) values "
+                        . "(:product_id, :parent_id, :store_id, :last_synced_at, :type)";
                     $binds = [
                         'product_id' => $value[0],
                         'parent_id' => $value[1],
                         'store_id' => $value[2],
-                        'last_synced_at'  => $value[3],
+                        'last_synced_at' => $value[3],
                         'type' => 'pages'
                     ];
                     $write->query($query, $binds);
                 }
             }
-            
+
             $skipped_count = count($skipped_record_ids);
             if ($skipped_count > 0) {
                 return sprintf("%d cms%s failed (%s)", $skipped_count, ($skipped_count > 1) ? "s" : "", implode(", ", $skipped_records["messages"]));
@@ -430,11 +433,11 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
                 return true;
             }
         } else {
-			$this->_searchModelSession->setKlevuFailedFlag(1);
+            $this->_searchModelSession->setKlevuFailedFlag(1);
             return sprintf("%d cms%s failed (%s)", $total, ($total > 1) ? "s" : "", $response->getMessage());
         }
     }
-    
+
     /**
      * Add the page Sync data to each page in the given list. Updates the given
      * list directly to save memory.
@@ -445,11 +448,11 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
      *
      * @return $this
      */
-	public function addcmsData(&$pages)
+    public function addCmsData(&$pages)
     {
         $page_ids = [];
-		$cms_data_new = [];
-		$page_ids = $pages;
+        $cms_data_new = [];
+        $page_ids = $pages;
         if ($this->_storeModelStoreManagerInterface->getStore()->isFrontUrlSecure()) {
             $base_url = $this->_storeModelStoreManagerInterface->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_LINK, true);
         } else {
@@ -464,7 +467,7 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
             $value["desc"] = $value["content"];
             $value["id"] = "pageid_" . $value["page_id"];
             $value["url"] = $base_url . $value["identifier"];
-            $desc = preg_replace("/<script\b[^>]*>(.*?)<\/script>/is", "", html_entity_decode($value["content"])); 
+            $desc = preg_replace("/<script\b[^>]*>(.*?)<\/script>/is", "", html_entity_decode($value["content"]));
             $value["desc"] = preg_replace('#\{{.*?\}}#s', '', strip_tags($this->_contentHelperData->ripTags($desc)));
             $value["metaDesc"] = $value["meta_description"] . $value["meta_keywords"];
             $value["shortDesc"] = substr(preg_replace('#\{{.*?\}}#s', '', strip_tags($this->_contentHelperData->ripTags($desc))), 0, 200);
@@ -473,12 +476,12 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
             $value["salePrice"] = 0;
             $value["currency"] = "USD";
             $value["inStock"] = "yes";
-			$value["visibility"] = "search";
+            $value["visibility"] = "search";
             $cms_data_new[] = $value;
         }
         return $cms_data_new;
     }
-    
+
     /**
      * Update the given pages on Klevu Search. Returns true if the operation was successful,
      * or the error message if it failed.
@@ -494,7 +497,7 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
         $total = count($data);
         $data = $this->addCmsData($data);
         $response = $this->_apiActionUpdaterecords->setStore($this->_storeModelStoreManagerInterface->getStore())->execute([
-            'sessionId' => $this->_searchModelSession->getKlevuSessionId() ,
+            'sessionId' => $this->_searchModelSession->getKlevuSessionId(),
             'records' => $data
         ]);
         if ($response->isSuccess()) {
@@ -523,7 +526,7 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
                 return true;
             }
         } else {
-			$this->_searchModelSession->setKlevuFailedFlag(1);
+            $this->_searchModelSession->setKlevuFailedFlag(1);
             return sprintf("%d cms%s failed (%s)", $total, ($total > 1) ? "s" : "", $response->getMessage());
         }
     }
