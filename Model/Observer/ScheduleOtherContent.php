@@ -44,8 +44,9 @@ class ScheduleOtherContent implements ObserverInterface
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
-        if ($this->_contentHelperConfig->isExternalCronEnabled()) {
-            $this->_contentModelContent->schedule();
-        }
+		if($this->_contentHelperConfig->isExternalCronEnabled()) {
+			//No need to schedule the Content CRON, will be removing in later versions
+			//$this->_contentModelContent->schedule();
+		}
     }
 }

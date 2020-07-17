@@ -8,6 +8,10 @@
 
 namespace Klevu\Content\Model;
 
+/**
+ * Interface ContentInterface
+ * @package Klevu\Content\Model
+ */
 interface ContentInterface
 {
     public function _construct();
@@ -19,6 +23,12 @@ interface ContentInterface
      * deleting removed content since last sync.
      */
     public function run();
+
+    /**
+     * @param $store
+     * @return mixed
+     */
+    public function syncCmsData($store);
 
     public function deletePagesCollection($store);
 

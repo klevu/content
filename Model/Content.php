@@ -169,10 +169,20 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
             $this->syncCmsData($store);
         }
     }
-
-    protected function syncCmsData($store)
+    
+    /**
+     * @param $store
+     * @return mixed|void
+     */
+    public function syncCmsData($store)
     {
-
+        $this->reset();
+        if (!$this->_contentHelperData->isCmsSyncEnabled($store->getId())) {
+            return;
+        }
+        if (!$this->_klevuProductActions->setupSession($store)) {
+            return;
+        }
         if ($this->rescheduleIfOutOfMemory()) {
             return;
         }

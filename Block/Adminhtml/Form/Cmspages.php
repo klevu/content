@@ -86,6 +86,7 @@ class Cmspages extends \Magento\Config\Block\System\Config\Form\Field\FieldArray
         $this->_cmsModelPage = \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\Cms\Model\Page');
         $cms_pages = $this->_cmsModelPage->getCollection()->addFieldToSelect(["page_id","title"])->addFieldToFilter('is_active', 1);
         $page_ids = $cms_pages->getData();
+        $cmsOptions = array();
         foreach ($page_ids as $id) {
             $cmsOptions[$id['page_id']] = addslashes($id['title']);
         }
