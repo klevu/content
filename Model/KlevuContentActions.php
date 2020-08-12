@@ -43,7 +43,8 @@ class KlevuContentActions extends DataObject
                 $skipped_record_ids = array_flip($skipped_records["index"]);
             }
             $or_where = [];
-            for ($i = 0; $i < count($data); $i++) {
+        $iMaxCount = count($data);
+            for ($i = 0; $i < $iMaxCount; $i++) {
                 if (isset($skipped_record_ids[$i])) {
                     continue;
                 }
@@ -71,7 +72,8 @@ class KlevuContentActions extends DataObject
                 $skipped_record_ids = array_flip($skipped_records["index"]);
             }
             $where = [];
-            for ($i = 0; $i < count($data); $i++) {
+        $iMaxCount = count($data);
+            for ($i = 0; $i < $iMaxCount; $i++) {
                 if (isset($skipped_record_ids[$i])) {
                     continue;
                 }
