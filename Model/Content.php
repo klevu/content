@@ -178,7 +178,9 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
     {
         $this->reset();
         if (!$this->_contentHelperData->isCmsSyncEnabled($store->getId())) {
-            return;
+            $msg = sprintf("CMS Sync found disabled for %s (%s).", $store->getWebsite()->getName(), $store->getName());
+            $this->log(\Zend\Log\Logger::INFO, $msg);
+            return $msg;
         }
         if (!$this->_klevuProductActions->setupSession($store)) {
             return;

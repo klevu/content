@@ -391,6 +391,29 @@ class MagentoContentActions extends AbstractModel
         }
     }
 
+    /**
+     * @param null $store
+     * @return $this
+     */
+    public function markCMSRecordIntoQueue($stores = null)
+    {
+        $whereType = $this->_frameworkModelResource->getConnection('core_write')->quoteInto('type = ?', 'pages');
+        $where = sprintf(" %s", $whereType);
+        if ($stores !== null) {
+            if (is_array($stores)) {
+                $storeIds = implode(',', $stores);
+            } else {
+                $storeIds = (int)$stores;
+            }
+            $where .= sprintf(" AND `store_id` IN(%s)", $storeIds);
+        }
 
+        $this->_frameworkModelResource->getConnection("core_write")->update(
+            $this->_frameworkModelResource->getTableName('klevu_product_sync'),
+            ['last_synced_at' => '0'],
+            $where
+        );
+        return $this;
+    }
 }
 
