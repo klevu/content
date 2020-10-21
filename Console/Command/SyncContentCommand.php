@@ -25,8 +25,8 @@ class SyncContentCommand extends Command
     const ALLDATA_CMS_DESC = 'Send all CMS pages to Klevu.';
     const UPDATESONLY_CMS_DESC = 'Only send those CMS pages which have been modified since the last sync with Klevu.';
 
-    const LOCK_FILE = 'cms_klevu_running_index.lock';
-    const AREA_CODE_LOCK_FILE = 'klevu_cms_areacode.lock';
+    const LOCK_FILE = 'klcmsentity_klevu_running_index.lock';
+    const AREA_CODE_LOCK_FILE = 'klevu_cmsentity_areacode.lock';
 
     /**
      * @var KlevuContent

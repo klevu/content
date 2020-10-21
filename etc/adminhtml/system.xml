@@ -6,16 +6,19 @@
       <tab>klevu</tab>
       <group id="product_sync" translate="label" sortOrder="102" showInDefault="1" showInWebsite="1" showInStore="1">
         <label>Data Sync Settings</label>
-        <field id="enabledcms" translate="label" sortOrder="111" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
-          <label>Enable Other Content Sync</label>
+        <field id="enabledcms" translate="label" sortOrder="50" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+          <label>Enable CMS Page Sync</label>
           <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-          <comment><![CDATA[Enable CMS Synchronization.]]></comment>
+          <comment><![CDATA[
+            Include Magento CMS Pages with your search results.
+            We will monitor changes to your CMS Pages and send them to Klevu based on the above frequency.
+          ]]></comment>
         </field>
       </group>
       <group id="cmscontent" translate="label" sortOrder="105" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
         <label>CMS / Other (Non-Product) Content</label>
         <field id="enabledcmsfront_info" translate="label comment" sortOrder="100" type="label" showInDefault="1" showInWebsite="1">
-          <comment><![CDATA[Switch to store view scope to set.]]></comment>
+          <comment><![CDATA[Switch to Store View scope to manage.]]></comment>
         </field>
         <field id="enabledcmsfront" translate="label" sortOrder="100" type="select" showInDefault="1" showInStore="1">
           <label>Enable Other Content in Frontend</label>
@@ -27,7 +30,9 @@
           <label>Exclude CMS Pages from Search</label>
 		  <frontend_model>Klevu\Content\Block\Adminhtml\Form\Cmspages</frontend_model>
           <backend_model>Klevu\Search\Model\Config\Backend\Serialized</backend_model>
-          <comment><![CDATA[Please make sure to resynchronize data by choosing the "All data" option and clicking on the "Sync Data for This Store" button under the "Data Sync Settings".]]></comment>
+          <comment><![CDATA[
+            This change will take place during the next data sync via Cron, CLI Command or manual sync.
+          ]]></comment>
         </field>
       </group>
     </section>
