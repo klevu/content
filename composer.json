@@ -10,7 +10,7 @@
 		"magento/framework": "@stable"
     },
     "type": "magento-module",
-    "version": "2.3.16",
+    "version": "2.3.17",
     "license": [
         "OSL-3.0",
         "AFL-3.0"
