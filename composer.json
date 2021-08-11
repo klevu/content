@@ -7,10 +7,11 @@
 		"magento/module-catalog": "@stable",
 		"magento/module-backend": "@stable",
 		"magento/module-eav": "@stable",
-		"magento/framework": "@stable"
+		"magento/framework": "@stable",
+        "zendframework/zend-log": ">=2.5"
     },
     "type": "magento-module",
-    "version": "2.3.17",
+    "version": "2.3.18",
     "license": [
         "OSL-3.0",
         "AFL-3.0"
