@@ -8,10 +8,10 @@
 		"magento/module-backend": "@stable",
 		"magento/module-eav": "@stable",
 		"magento/framework": "@stable",
-        "zendframework/zend-log": ">=2.5"
+        "klevu/module-logger": "^1.0.0"
     },
     "type": "magento-module",
-    "version": "2.3.18",
+    "version": "2.4.0",
     "license": [
         "OSL-3.0",
         "AFL-3.0"

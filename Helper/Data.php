@@ -1,6 +1,7 @@
 <?php
 namespace Klevu\Content\Helper;
 
+use Klevu\Logger\Constants as LoggerConstants;
 
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
@@ -87,7 +88,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 'klevuShowOutOfStockProducts' => 'true',
                 'filterResults' => $this->_getPreparedFilters() ,
             ];
-            $this->log(\Zend\Log\Logger::DEBUG, sprintf("Starting search for term: %s", $q));
+            $this->log(LoggerConstants::ZEND_LOG_DEBUG, sprintf("Starting search for term: %s", $q));
         }
         return $this->_klevu_Content_parameters;
     }
@@ -118,7 +119,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             'klevu_typeOfQuery' => $queryType,
             'Klevu_typeOfRecord' => 'KLEVU_CMS'
         ];
-        $this->log(\Zend\Log\Logger::DEBUG, sprintf("Content Search tracking for term: %s", $q));
+        $this->log(LoggerConstants::ZEND_LOG_DEBUG, sprintf("Content Search tracking for term: %s", $q));
         return $this->_klevu_tracking_parameters;
     }
 
@@ -161,7 +162,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
             $response_meta = $this->getKlevuResponse()->getData('meta');
             $this->_apiActionSearchtermtracking->execute($this->getContentSearchTracking(count($this->_klevu_Cms_Data), $response_meta['typeOfQuery']));
-            $this->log(\Zend\Log\Logger::DEBUG, sprintf("Cms count returned: %s", count($this->_klevu_Cms_Data)));
+            $this->log(LoggerConstants::ZEND_LOG_DEBUG, sprintf("Cms count returned: %s", count($this->_klevu_Cms_Data)));
         }
         return $this->_klevu_Cms_Data;
     }
@@ -342,7 +343,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                     $prepared_filters['category'] = $filter_type;
                     break;
             }
-            $this->log(\Zend\Log\Logger::DEBUG, sprintf('Active For Category Filters: %s', var_export($prepared_filters, true)));
+            $this->log(LoggerConstants::ZEND_LOG_DEBUG, sprintf('Active For Category Filters: %s', var_export($prepared_filters, true)));
             return implode(';;', array_map(function ($v, $k) {
 
                 return sprintf('%s:%s', $k, $v);
