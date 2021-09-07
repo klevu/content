@@ -2,6 +2,7 @@
 
 namespace Klevu\Content\Model;
 
+use Klevu\Logger\Constants as LoggerConstants;
 use Klevu\Search\Model\Klevu\KlevuFactory as Klevu_Factory;
 use Klevu\Search\Model\Product\KlevuProductActionsInterface as Klevu_Product_Actions;
 use Klevu\Search\Model\Sync as KlevuSync;
@@ -151,7 +152,7 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
 
         if ($this->isRunning(2)) {
             // Stop if another copy is already running
-            $this->log(\Zend\Log\Logger::INFO, "Stopping because another copy is already running.");
+            $this->log(LoggerConstants::ZEND_LOG_INFO, "Stopping because another copy is already running.");
             return;
         }
 
@@ -179,7 +180,7 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
         $this->reset();
         if (!$this->_contentHelperData->isCmsSyncEnabled($store->getId())) {
             $msg = sprintf("CMS Sync found disabled for %s (%s).", $store->getWebsite()->getName(), $store->getName());
-            $this->log(\Zend\Log\Logger::INFO, $msg);
+            $this->log(LoggerConstants::ZEND_LOG_INFO, $msg);
             return $msg;
         }
         if (!$this->_klevuProductActions->setupSession($store)) {
@@ -191,7 +192,7 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
         $page_ids = [];
 
         $this->_storeModelStoreManagerInterface->setCurrentStore($store->getId());
-        $this->log(\Zend\Log\Logger::INFO, sprintf("Starting Cms sync for %s (%s).", $store->getWebsite()->getName(), $store->getName()));
+        $this->log(LoggerConstants::ZEND_LOG_INFO, sprintf("Starting Cms sync for %s (%s).", $store->getWebsite()->getName(), $store->getName()));
 
         $actions = array('delete', 'update', 'add');
         $errors = 0;
@@ -213,7 +214,7 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
             $method = $action . "cms";
             $cms_pages = $page_ids;
             $total = count($cms_pages);
-            $this->log(\Zend\Log\Logger::INFO, sprintf("Found %d Cms Pages to %s.", $total, $action));
+            $this->log(LoggerConstants::ZEND_LOG_INFO, sprintf("Found %d Cms Pages to %s.", $total, $action));
             $pages = ceil($total / static ::RECORDS_PER_PAGE);
             for ($page = 1; $page <= $pages; $page++) {
                 if ($this->rescheduleIfOutOfMemory()) {
@@ -223,11 +224,11 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
                 $result = $this->$method(array_slice($cms_pages, $offset, static ::RECORDS_PER_PAGE));
                 if ($result !== true) {
                     $errors++;
-                    $this->log(\Zend\Log\Logger::ERR, sprintf("Errors occurred while attempting to %s cms pages %d - %d: %s", $action, $offset + 1, ($offset + static ::RECORDS_PER_PAGE <= $total) ? $offset + static ::RECORDS_PER_PAGE : $total, $result));
+                    $this->log(LoggerConstants::ZEND_LOG_ERR, sprintf("Errors occurred while attempting to %s cms pages %d - %d: %s", $action, $offset + 1, ($offset + static ::RECORDS_PER_PAGE <= $total) ? $offset + static ::RECORDS_PER_PAGE : $total, $result));
                 }
             }
         }
-        $this->log(\Zend\Log\Logger::INFO, sprintf("Finished cms page sync for %s (%s).", $store->getWebsite()->getName(), $store->getName()));
+        $this->log(LoggerConstants::ZEND_LOG_INFO, sprintf("Finished cms page sync for %s (%s).", $store->getWebsite()->getName(), $store->getName()));
     }
 
 
