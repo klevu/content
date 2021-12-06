@@ -11,7 +11,7 @@
         "klevu/module-logger": "^1.0.0"
     },
     "type": "magento-module",
-    "version": "2.4.3",
+    "version": "2.5.0",
     "license": [
         "OSL-3.0",
         "AFL-3.0"
