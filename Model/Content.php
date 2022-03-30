@@ -170,7 +170,7 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
             $this->syncCmsData($store);
         }
     }
-    
+
     /**
      * @param $store
      * @return mixed|void
@@ -481,9 +481,9 @@ class Content extends \Klevu\Search\Model\Product\Sync implements ContentInterfa
             $value["id"] = "pageid_" . $value["page_id"];
             $value["url"] = $base_url . $value["identifier"];
             $desc = preg_replace("/<script\b[^>]*>(.*?)<\/script>/is", "", html_entity_decode($value["content"]));
-            $value["desc"] = preg_replace('#\{{.*?\}}#s', '', strip_tags($this->_contentHelperData->ripTags($desc)));
+            $value["desc"] = preg_replace('#\{{.*?\}}#s', '', strip_tags((string)$this->_contentHelperData->ripTags($desc)));
             $value["metaDesc"] = $value["meta_description"] . $value["meta_keywords"];
-            $value["shortDesc"] = substr(preg_replace('#\{{.*?\}}#s', '', strip_tags($this->_contentHelperData->ripTags($desc))), 0, 200);
+            $value["shortDesc"] = substr(preg_replace('#\{{.*?\}}#s', '', strip_tags((string)$this->_contentHelperData->ripTags($desc))), 0, 200);
             $value["listCategory"] = "KLEVU_CMS";
             $value["category"] = "pages";
             $value["salePrice"] = 0;
