@@ -9,10 +9,10 @@
 		"magento/module-eav": "@stable",
 		"magento/framework": "@stable",
         "klevu/module-logger": "^1.0.0|^2.0.0",
-        "klevu/module-productsearch": "^2.7.0"
+        "klevu/module-productsearch": "^2.8.1"
     },
     "type": "magento-module",
-    "version": "2.7.1",
+    "version": "2.7.2",
     "license": [
         "OSL-3.0",
         "AFL-3.0"
