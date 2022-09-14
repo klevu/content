@@ -8,9 +8,22 @@
             </argument>
         </arguments>
     </type>
-    <type name="Klevu\Search\Plugin\Admin\System\Config\Form\Field\DisableFieldPlugin">
+
+    <type name="Klevu\Search\Service\Admin\System\Config\Form\Field\RenderAction\UpdateConfigValueIfFeatureUnavailable">
         <arguments>
-            <argument name="fieldsToDisable" xsi:type="array">
+            <argument name="fieldUpdateConfig" xsi:type="array">
+                <item name="klevu_search_cmscontent_enabledcmsfront" xsi:type="array">
+                    <item name="element_id" xsi:type="string">klevu_search_cmscontent_enabledcmsfront</item>
+                    <item name="feature" xsi:type="const">Klevu\Search\Service\Account\Model\AccountFeatures::PM_FEATUREFLAG_CMS_FRONT</item>
+                    <item name="value" xsi:type="string">0</item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
+
+    <type name="Klevu\Search\Service\Admin\System\Config\Form\Field\RenderAction\DisableFieldIfFeatureUnavailable">
+        <arguments>
+            <argument name="fieldToFeatureMap" xsi:type="array">
                 <item name="klevu_search_cmscontent_enabledcmsfront" xsi:type="const">Klevu\Search\Service\Account\Model\AccountFeatures::PM_FEATUREFLAG_CMS_FRONT</item>
             </argument>
         </arguments>
