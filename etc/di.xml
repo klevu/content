@@ -10,5 +10,10 @@
             </argument>
         </arguments>
     </type>
+    <type name="\Klevu\Content\Helper\Data">
+        <arguments>
+            <argument name="serializer" xsi:type="object">\Magento\Framework\Serialize\Serializer\Serialize</argument>
+        </arguments>
+    </type>
 </config>
 
