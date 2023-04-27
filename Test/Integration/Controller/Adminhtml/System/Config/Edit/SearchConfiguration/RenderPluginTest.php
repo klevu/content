@@ -1,4 +1,6 @@
 <?php
+// phpcs:disable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
+// phpcs:disable Generic.Files.LineLength.TooLong
 
 namespace Klevu\Content\Test\Integration\Controller\Adminhtml\System\Config\Edit\SearchConfiguration;
 
@@ -188,13 +190,15 @@ class RenderPluginTest extends AbstractBackendControllerTestCase
             static function ($feature, $strict = false) {
                 switch ($feature) {
                     case AccountFeatures::PM_FEATUREFLAG_CMS_FRONT:
-                        return true;
+                        $return = true;
                         break;
 
                     default:
-                        return false;
+                        $return = false;
                         break;
                 }
+
+                return $return;
             }
         );
 
@@ -276,9 +280,11 @@ class RenderPluginTest extends AbstractBackendControllerTestCase
                 switch ($feature) {
                     case AccountFeatures::PM_FEATUREFLAG_CMS_FRONT:
                     default:
-                        return false;
+                        $return = false;
                         break;
                 }
+
+                return $return;
             }
         );
 
@@ -364,13 +370,15 @@ class RenderPluginTest extends AbstractBackendControllerTestCase
             static function ($feature, $strict = false) {
                 switch ($feature) {
                     case AccountFeatures::PM_FEATUREFLAG_CMS_FRONT:
-                        return true;
+                        $return = true;
                         break;
 
                     default:
-                        return false;
+                        $return = false;
                         break;
                 }
+
+                return $return;
             }
         );
 
@@ -463,9 +471,11 @@ class RenderPluginTest extends AbstractBackendControllerTestCase
                 switch ($feature) {
                     case AccountFeatures::PM_FEATUREFLAG_CMS_FRONT:
                     default:
-                        return false;
+                        $return = false;
                         break;
                 }
+
+                return $return;
             }
         );
 
@@ -559,7 +569,7 @@ class RenderPluginTest extends AbstractBackendControllerTestCase
         }
         $this->_objectManager->get(\Magento\Framework\Acl\Builder::class)
             ->getAcl()
-            ->deny(null, $this->resource);
+            ->deny($this->_auth->getUser()->getRoles(), $this->resource);
         $this->dispatch($this->uri);
         $this->assertSame($this->expectedNoAccessResponseCode, $this->getResponse()->getHttpResponseCode());
     }
