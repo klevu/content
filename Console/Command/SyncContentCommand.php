@@ -10,6 +10,8 @@ use Magento\Framework\App\Filesystem\DirectoryList as DirectoryList;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\State;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Filesystem\Driver\File as FileDriver;
+use Magento\Framework\Filesystem\DriverInterface as FilesystemDriverInterface;
 use Magento\Store\Model\StoreManagerInterface as StoreManagerInterface;
 use Psr\Log\LoggerInterface as LoggerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -17,10 +19,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-/**
- * Class SyncContentCommand
- * @package Klevu\Content\Console\Command
- */
 class SyncContentCommand extends Command
 {
     const ALLDATA_CMS_DESC = 'Send all CMS pages to Klevu.';
@@ -70,12 +68,23 @@ class SyncContentCommand extends Command
     protected $magentoContentActions;
 
     /**
+     * @var FilesystemDriverInterface
+     */
+    private $fileDriver;
+
+    /**
+     * @var string[][]
+     */
+    protected $websiteList = [];
+
+    /**
      * @param State $state
      * @param StoreManagerInterface $storeInterface
      * @param DirectoryList $directoryList
      * @param LoggerInterface $logger
      * @param StoreScopeResolverInterface|null $storeScopeResolver
      * @param string|null $klevuLoggerFQCN
+     * @param FilesystemDriverInterface|null $fileDriver
      */
     public function __construct(
         State $state,
@@ -83,7 +92,8 @@ class SyncContentCommand extends Command
         DirectoryList $directoryList,
         LoggerInterface $logger,
         StoreScopeResolverInterface $storeScopeResolver = null,
-        $klevuLoggerFQCN = null
+        $klevuLoggerFQCN = null,
+        FilesystemDriverInterface $fileDriver = null
     ) {
         $this->state = $state;
         $this->storeInterface = $storeInterface;
@@ -93,6 +103,7 @@ class SyncContentCommand extends Command
         if (is_string($klevuLoggerFQCN)) {
             $this->klevuLoggerFQCN = $klevuLoggerFQCN;
         }
+        $this->fileDriver = $fileDriver ?: ObjectManager::getInstance()->get(FileDriver::class);
 
         parent::__construct();
     }
@@ -103,10 +114,12 @@ class SyncContentCommand extends Command
     protected function configure()
     {
         $this->setName('klevu:sync:cmspages')
-            ->setDescription('
-            Sync CMS Pages with Klevu for all stores.
-            You can specify whether to process all cmspages or just those that have changed via an option detailed below.
-            If no option is specified, --updatesonly will be used.')
+            ->setDescription(
+                'Sync CMS Pages with Klevu for all stores.' . PHP_EOL
+                . 'You can specify whether to process all cmspages or just those that have '
+                . 'changed via an option detailed below.' . PHP_EOL
+                . 'If no option is specified, --updatesonly will be used.'
+            )
             ->setDefinition($this->getInputList())
             ->setHelp(
                 <<<HELP
@@ -121,7 +134,6 @@ HELP
             );
         parent::configure();
     }
-
 
     /**
      * Run the content sync command
@@ -142,12 +154,12 @@ HELP
         $storeLockFile = '';
         $areaCodeFile = $logDir . "/" . self::AREA_CODE_LOCK_FILE;
         try {
-            if (file_exists($areaCodeFile)) {
-                unlink($areaCodeFile);
+            if ($this->fileDriver->isExists($areaCodeFile)) {
+                $this->fileDriver->deleteFile($areaCodeFile);
             }
             $this->state->setAreaCode(Area::AREA_FRONTEND);
         } catch (LocalizedException $e) {
-            fopen($areaCodeFile, 'w');
+            $this->fileDriver->fileOpen($areaCodeFile, 'w');
             if ($this->state->getAreaCode() != Area::AREA_FRONTEND) {
                 $output->writeln(__(
                     sprintf('CMS sync running in an unexpected state AreaCode : (%s)', $this->state->getAreaCode())
@@ -156,11 +168,16 @@ HELP
         }
 
         $storeList = $this->storeInterface->getStores();
-        $syncFailed = $syncSuccess = array();
-        $storeCodesForCMS = array();
+        $syncFailed = $syncSuccess = [];
+        $storeCodesForCMS = [];
         foreach ($storeList as $store) {
-            if (!isset($this->websiteList[$store->getWebsiteId()])) $this->websiteList[$store->getWebsiteId()] = array();
-            $this->websiteList[$store->getWebsiteId()] = array_unique(array_merge($this->websiteList[$store->getWebsiteId()], array($store->getCode())));
+            $storeWebsiteId = $store->getWebsiteId();
+            if (!isset($this->websiteList[$storeWebsiteId])) {
+                $this->websiteList[$storeWebsiteId] = [];
+            }
+            if (!in_array($store->getCode(), $this->websiteList[$storeWebsiteId])) {
+                $this->websiteList[$storeWebsiteId][] = $store->getCode();
+            }
             $storeCodesForCMS[] = $store->getCode();
         }
         $this->magentoContentActions = ObjectManager::getInstance()->get(MagentoContentActions::class);
@@ -170,12 +187,18 @@ HELP
             $output->writeln('');
 
             if ($input->hasParameterOption('--alldata')) {
-                $output->writeln('<info>CMS Synchronization started using --alldata option.</info>');
+                $output->writeln(
+                    '<info>CMS Synchronization started using --alldata option.</info>'
+                );
                 $this->magentoContentActions->markCMSRecordIntoQueue();
             } elseif ($input->hasParameterOption('--updatesonly')) {
-                $output->writeln('<info>CMS Synchronization started using --updatesonly option.</info>');
+                $output->writeln(
+                    '<info>CMS Synchronization started using --updatesonly option.</info>'
+                );
             } else {
-                $output->writeln('<info>No option provided. CMS Synchronization started using updatesonly option.</info>');
+                $output->writeln(
+                    '<info>No option provided. CMS Synchronization started using updatesonly option.</info>'
+                );
             }
 
             if (count($storeCodesForCMS) > 0) {
@@ -183,43 +206,68 @@ HELP
                     $this->storeScopeResolver->setCurrentStoreByCode($rowStoreCode);
 
                     $storeLockFile = $logDir . "/" . $rowStoreCode . "_" . self::LOCK_FILE;
-                    if (file_exists($storeLockFile)) {
-                        $output->writeln('<error>Klevu CMS sync process cannot start because a lock file exists for store code: ' . $rowStoreCode . ', skipping this store.</error>');
+                    if ($this->fileDriver->isExists($storeLockFile)) {
+                        $output->writeln(
+                            sprintf(
+                                '<error>Klevu CMS sync process cannot start because a lock file exists for '
+                                . 'store code: %s, skipping this store.</error>',
+                                $rowStoreCode
+                            )
+                        );
                         $output->writeln("");
                         $syncFailed[] = $rowStoreCode;
                         continue;
                     }
-                    fopen($storeLockFile, 'w');
+                    $this->fileDriver->fileOpen($storeLockFile, 'w');
                     $rowStoreObject = $this->storeInterface->getStore($rowStoreCode);
                     if (!is_object($rowStoreObject)) {
-                        $output->writeln('<error>Store object found invalid for store code : ' . $rowStoreCode . ', skipping this store.</error>');
+                        $output->writeln(
+                            sprintf(
+                                '<error>Store object found invalid for store code : %s, skipping this store.</error>',
+                                $rowStoreCode
+                            )
+                        );
                         $output->writeln("");
                         $syncFailed[] = $rowStoreCode;
                         continue;
                     }
                     $output->writeln('');
-                    $output->writeln("<info>CMS Sync started for store code : " . $rowStoreObject->getCode() . "</info>");
+                    $output->writeln(
+                        sprintf(
+                            '<info>CMS Sync started for store code : %s</info>',
+                            $rowStoreObject->getCode()
+                        )
+                    );
                     $msg = $this->contentSync->syncCmsData($rowStoreObject);
                     if (!empty($msg)) {
                         $output->writeln("<comment>" . $msg . "</comment>");
                     }
-                    $output->writeln("<info>CMS Sync completed for store code : " . $rowStoreObject->getCode() . "</info>");
+                    $output->writeln(
+                        sprintf(
+                            '<info>CMS Sync completed for store code : %s</info>',
+                            $rowStoreObject->getCode()
+                        )
+                    );
 
                     $syncSuccess[] = $rowStoreObject->getCode();
 
-                    if (file_exists($storeLockFile)) {
-                        unlink($storeLockFile);
+                    if ($this->fileDriver->isExists($storeLockFile)) {
+                        $this->fileDriver->deleteFile($storeLockFile);
                     }
                     $output->writeln("<info>********************************</info>");
                 }
                 $this->storeScopeResolver->setCurrentStoreById(0);
             }
-
         } catch (\Exception $e) {
-            $output->writeln('<error>Error thrown in store wise CMS data sync: ' . $e->getMessage() . '</error>');
+            $output->writeln(
+                sprintf(
+                    '<error>Error thrown in store wise CMS data sync: %s</error>',
+                    $e->getMessage()
+                )
+            );
             if (isset($storeLockFile)) {
-                if (file_exists($storeLockFile)) {
-                    unlink($storeLockFile);
+                if ($this->fileDriver->isExists($storeLockFile)) {
+                    $this->fileDriver->deleteFile($storeLockFile);
                 }
             }
             $this->storeScopeResolver->setCurrentStoreById(0);
@@ -228,16 +276,28 @@ HELP
         }
         $output->writeln('');
         if (!empty($syncSuccess)) {
-            $output->writeln('<info>CMS Sync successfully completed for store code(s): ' . implode(",", $syncSuccess) . '</info>');
+            $output->writeln(
+                sprintf(
+                    '<info>CMS Sync successfully completed for store code(s): %s</info>',
+                    implode(',', $syncSuccess)
+                )
+            );
         }
         if (!empty($syncFailed)) {
-            $output->writeln('<error>CMS Sync did not complete for store code(s): ' . implode(",", $syncFailed) . '</error>');
+            $output->writeln(
+                sprintf(
+                    '<error>CMS Sync did not complete for store code(s): %s</error>',
+                    implode(',', $syncFailed)
+                )
+            );
         }
 
         return \Magento\Framework\Console\Cli::RETURN_SUCCESS;
     }
 
-
+    /**
+     * @return InputOption[]
+     */
     public function getInputList()
     {
         $inputList = [];
@@ -290,7 +350,8 @@ HELP
      *
      * For the same reasons as initLogger is required, we can't inject a class from a new
      *  module into a CLI command. Unlike initLogger, however, this is a new property so
-     *  the usual $this->>storeScopeResolver = $storeScopeResolver ?: ObjectManager::getInstance()->get(StoreScopeResolverInterface::class)
+     *  the usual $this->>storeScopeResolver
+     *              = $storeScopeResolver ?: ObjectManager::getInstance()->get(StoreScopeResolverInterface::class)
      *  logic can effectively be used without checking for a class mismatch
      *
      * @return void
