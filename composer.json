@@ -7,12 +7,12 @@
         "magento/module-catalog": "@stable",
         "magento/module-backend": "@stable",
         "magento/module-eav": "@stable",
-        "magento/framework": "@stable",
+        "magento/framework": "<103.0.7",
         "klevu/module-logger": "^1.0.0|^2.0.0",
         "klevu/module-productsearch": "^2.8.1"
     },
     "type": "magento2-module",
-    "version": "2.8.1",
+    "version": "2.8.2",
     "license": [
         "OSL-3.0",
         "AFL-3.0"
