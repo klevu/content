@@ -3,18 +3,32 @@
  * Content template for KLEVU CMS variables
  *
  * @var $block \Klevu\Content\Block\QueryType
+ * @var \Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer
  */
+$isCmsSyncEnabledOnFront = $block->isCmsSyncEnabledOnFront()
+    ? 'true'
+    : 'false';
 ?>
-<?php if ($block->isExtensionConfigured()):?>
-<script type="text/javascript">
-    var klevu_cms_module_enabled=true;
-</script>
+
+<?php if ($block->isExtensionConfigured()): ?>
+    <?= $secureRenderer->renderTag(
+        'script',
+        ['type' => 'text/javascript'],
+        'var klevu_cms_module_enabled = true;',
+        true
+    ) ?>
 <?php endif; ?>
-<script type="text/javascript">
-// Enable CMS for klevu template
-<?php if ($block->isCmsSyncEnabledOnFront()): ?>
-	var klevu_cmsSearchEnabled = true;
-<?php else: ?>
-	var klevu_cmsSearchEnabled = false;
-<?php endif; ?>     
-</script>
+
+<?php
+$scriptString = <<<script
+
+    var klevu_cmsSearchEnabled = {$isCmsSyncEnabledOnFront};
+
+script;
+?>
+<?= $secureRenderer->renderTag(
+    'script',
+    ['type' => 'text/javascript'],
+    $scriptString,
+    true
+) ?>
