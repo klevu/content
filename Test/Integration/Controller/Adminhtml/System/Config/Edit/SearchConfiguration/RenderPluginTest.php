@@ -89,21 +89,15 @@ class RenderPluginTest extends AbstractBackendControllerTestCase
         } else {
             $this->assertContains('<div id="system_config_tabs"', $responseBody);
         }
-        if (method_exists($this, 'assertMatchesRegularExpression')) {
-            $this->assertMatchesRegularExpression('#<fieldset[^>]+id="klevu_search_cmscontent"#', $responseBody);
+        if (method_exists($this, 'assertDoesNotMatchRegularExpression')) {
+            $this->assertDoesNotMatchRegularExpression('#<fieldset[^>]+id="klevu_search_cmscontent"#', $responseBody);
         } else {
-            $this->assertRegExp('#<fieldset[^>]+id="klevu_search_cmscontent"#', $responseBody);
+            $this->assertNotRegExp('#<fieldset[^>]+id="klevu_search_cmscontent"#', $responseBody);
         }
 
         $matches = [];
         preg_match('#<tr[^>]+id="row_klevu_search_cmscontent_enabledcmsfront_info".*?</tr>#s', $responseBody, $matches);
-        $this->assertCount(1, $matches);
-        $cmsContentRow = current($matches);
-        if (method_exists($this, 'assertStringContainsString')) {
-            $this->assertStringContainsString('Switch to Store View scope to manage', $cmsContentRow);
-        } else {
-            $this->assertContains('Switch to Store View scope to manage', $cmsContentRow);
-        }
+        $this->assertCount(0, $matches);
         if (method_exists($this, 'assertDoesNotMatchRegularExpression')) {
             $this->assertDoesNotMatchRegularExpression('#<tr[^>]+id="row_klevu_search_cmscontent_enabledcmsfront".*?</tr>#s', $responseBody);
             $this->assertDoesNotMatchRegularExpression('#<(input|select).*?id="klevu_search_cmscontent_enabledcmsfront"#s', $responseBody);
@@ -144,21 +138,15 @@ class RenderPluginTest extends AbstractBackendControllerTestCase
         $this->assertNotSame($this->expectedNoAccessResponseCode, $httpResponseCode);
 
         $responseBody = $response->getBody();
-        if (method_exists($this, 'assertMatchesRegularExpression')) {
-            $this->assertMatchesRegularExpression('#<fieldset[^>]+id="klevu_search_cmscontent"#', $responseBody);
+        if (method_exists($this, 'assertDoesNotMatchRegularExpression')) {
+            $this->assertDoesNotMatchRegularExpression('#<fieldset[^>]+id="klevu_search_cmscontent"#', $responseBody);
         } else {
-            $this->assertRegExp('#<fieldset[^>]+id="klevu_search_cmscontent"#', $responseBody);
+            $this->assertNotRegExp('#<fieldset[^>]+id="klevu_search_cmscontent"#', $responseBody);
         }
 
         $matches = [];
         preg_match('#<tr[^>]+id="row_klevu_search_cmscontent_enabledcmsfront_info".*?</tr>#s', $responseBody, $matches);
-        $this->assertCount(1, $matches);
-        $cmsContentRow = current($matches);
-        if (method_exists($this, 'assertStringContainsString')) {
-            $this->assertStringContainsString('Switch to Store View scope to manage', $cmsContentRow);
-        } else {
-            $this->assertContains('Switch to Store View scope to manage', $cmsContentRow);
-        }
+        $this->assertCount(0, $matches);
         if (method_exists($this, 'assertDoesNotMatchRegularExpression')) {
             $this->assertDoesNotMatchRegularExpression('#<tr[^>]+id="row_klevu_search_cmscontent_enabledcmsfront".*?</tr>#s', $responseBody);
             $this->assertDoesNotMatchRegularExpression('#<(input|select).*?id="klevu_search_cmscontent_enabledcmsfront"#s', $responseBody);
@@ -243,11 +231,6 @@ class RenderPluginTest extends AbstractBackendControllerTestCase
         preg_match('#<select id="klevu_search_cmscontent_enabledcmsfront".*?>.*?</select>#s', $responseBody, $matches);
         $this->assertCount(1, $matches, 'CMS Content Field');
         $cmsContentField = current($matches);
-        if (method_exists($this, 'assertStringNotContainsString')) {
-            $this->assertStringNotContainsString('disabled', $cmsContentField);
-        } else {
-            $this->assertNotContains('disabled', $cmsContentField);
-        }
         if (method_exists($this, 'assertMatchesRegularExpression')) {
             $this->assertMatchesRegularExpression('#<option[^>]+value="1".*?>\s*Yes\s*</option>#s', $cmsContentField);
             $this->assertMatchesRegularExpression('#<option[^>]+value="0"[^>]+selected.*?>\s*No\s*</option>#s', $cmsContentField);
@@ -332,11 +315,6 @@ class RenderPluginTest extends AbstractBackendControllerTestCase
         preg_match('#<select id="klevu_search_cmscontent_enabledcmsfront".*?>.*?</select>#s', $responseBody, $matches);
         $this->assertCount(1, $matches, 'CMS Content Field');
         $cmsContentField = current($matches);
-        if (method_exists($this, 'assertStringNotContainsString')) {
-            $this->assertStringContainsString('disabled', $cmsContentField);
-        } else {
-            $this->assertContains('disabled', $cmsContentField);
-        }
         if (method_exists($this, 'assertMatchesRegularExpression')) {
             $this->assertMatchesRegularExpression('#<option[^>]+value="1".*?>\s*Yes\s*</option>#s', $cmsContentField);
             $this->assertMatchesRegularExpression('#<option[^>]+value="0"[^>]+selected.*?>\s*No\s*</option>#s', $cmsContentField);
@@ -423,11 +401,6 @@ class RenderPluginTest extends AbstractBackendControllerTestCase
         preg_match('#<select id="klevu_search_cmscontent_enabledcmsfront".*?>.*?</select>#s', $responseBody, $matches);
         $this->assertCount(1, $matches, 'CMS Content Field');
         $cmsContentField = current($matches);
-        if (method_exists($this, 'assertStringNotContainsString')) {
-            $this->assertStringNotContainsString('disabled', $cmsContentField);
-        } else {
-            $this->assertNotContains('disabled', $cmsContentField);
-        }
         if (method_exists($this, 'assertMatchesRegularExpression')) {
             $this->assertMatchesRegularExpression('#<option[^>]+value="1"[^>]+selected.*?>\s*Yes\s*</option>#s', $cmsContentField);
             $this->assertMatchesRegularExpression('#<option[^>]+value="0".*?>\s*No\s*</option>#s', $cmsContentField);
