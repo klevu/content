@@ -71,8 +71,8 @@ class LoadAttribute extends AbstractModel
     public function __construct(
         Context $context,
         Category $catalogModelCategory,
-        ContentHelper $contentHelper = null,
-        CmsPage $cmsPage = null
+        ?ContentHelper $contentHelper = null,
+        ?CmsPage $cmsPage = null
     ) {
         $helperManager = $context->getHelperManager();
         $this->_storeModelStoreManagerInterface = $context->getStoreManagerInterface();

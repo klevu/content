@@ -5,26 +5,81 @@
 
 namespace Klevu\Content\Model;
 
-use Klevu\Content\Model\KlevuContentActions as Klevu_Content_Actions;
-use \Magento\Framework\Model\AbstractModel as AbstractModel;
-use \Magento\Eav\Model\Config as Eav_Config;
-use Klevu\Content\Model\LoadAttribute as Klevu_LoadContentAttribute;
-use Klevu\Search\Model\Context as Klevu_Search_Context;
 use Klevu\Content\Helper\Data as Klevu_Content_Helper;
-
+use Klevu\Content\Model\KlevuContentActions as Klevu_Content_Actions;
+use Klevu\Content\Model\LoadAttribute as Klevu_LoadContentAttribute;
+use Klevu\Search\Model\Api\Action\Addrecords;
+use Klevu\Search\Model\Api\Action\Deleterecords;
+use Klevu\Search\Model\Api\Action\Updaterecords;
+use Klevu\Search\Model\Context as Klevu_Search_Context;
+use Magento\Backend\Model\Session as BackendSession;
+use Magento\Eav\Model\Config as Eav_Config;
+use Magento\Framework\App\ProductMetadataInterface;
+use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\Model\AbstractModel as AbstractModel;
+use Magento\Store\Model\StoreManagerInterface;
 
 class MagentoContentActions extends AbstractModel
 {
+    /**
+     * @var ProductMetadataInterface
+     */
+    protected $_ProductMetadataInterface;
+    /**
+     * @var StoreManagerInterface
+     */
+    protected $_storeModelStoreManagerInterface;
+    /**
+     * @var BackendSession
+     */
+    protected $_searchModelSession;
+    /**
+     * @var Deleterecords
+     */
+    protected $_apiActionDeleterecords;
+    /**
+     * @var Updaterecords
+     */
+    protected $_apiActionUpdaterecords;
+    /**
+     * @var Addrecords
+     */
+    protected $_apiActionAddrecords;
+    /**
+     * @var ResourceConnection
+     */
+    protected $_frameworkModelResource;
+    /**
+     * @var \Klevu\Search\Model\Category\LoadAttribute
+     */
+    protected $_loadAttribute;
+    /**
+     * @var Klevu_Content_Helper
+     */
+    protected $_contentHelperData;
+    /**
+     * @var KlevuContentActions
+     */
+    protected $_klevuContentActions;
+    /**
+     * @var string
+     */
+    protected $_page_value;
 
+    /**
+     * @param Klevu_Search_Context $context
+     * @param Eav_Config $eavConfig
+     * @param KlevuContentActions $klevuContentAction
+     * @param LoadAttribute $loadAttribute
+     * @param Klevu_Content_Helper $contentHelperData
+     */
     public function __construct(
         Klevu_Search_Context $context,
         Eav_Config $eavConfig,
         Klevu_Content_Actions $klevuContentAction,
-		Klevu_LoadContentAttribute $loadAttribute,
+        Klevu_LoadContentAttribute $loadAttribute,
         Klevu_Content_Helper $contentHelperData
-    )
-    {
-
+    ) {
         $this->_ProductMetadataInterface = $context->getKlevuProductMeta();
         $this->_storeModelStoreManagerInterface = $context->getStoreManagerInterface();
         $this->_searchModelSession = $context->getBackendSession();
@@ -33,26 +88,36 @@ class MagentoContentActions extends AbstractModel
         $this->_apiActionAddrecords = $context->getKlevuProductAdd();
         $this->_frameworkModelResource = $context->getResourceConnection();
         $this->_loadAttribute = $loadAttribute;
-        $this->_searchHelperConfig = $context->getHelperManager()->getConfigHelper();
-        $this->_searchHelperCompat = $context->getHelperManager()->getCompatHelper();
-		$this->_klevuContentActions = $klevuContentAction;
+        $this->_klevuContentActions = $klevuContentAction;
         $this->_contentHelperData = $contentHelperData;
 
-        if (in_array($this->_ProductMetadataInterface->getEdition(),array("Enterprise","B2B")) && version_compare($this->_ProductMetadataInterface->getVersion(), '2.1.0', '>=')===true) {
+        if (in_array($this->_ProductMetadataInterface->getEdition(), ["Enterprise", "B2B"])
+            && version_compare(
+                $this->_ProductMetadataInterface->getVersion(),
+                '2.1.0',
+                '>='
+            ) === true
+        ) {
             $this->_page_value = "row_id";
         } else {
             $this->_page_value = "page_id";
         }
     }
 
-
+    /**
+     * @param $store
+     *
+     * @return array
+     * @throws \Zend_Db_Select_Exception
+     * @deprecated Currently not in use internally by module, kept for Backward Compatibility
+     * @see \Klevu\Content\Model\Content::syncCmsData()
+     */
     public function getContentSyncDataActions($store)
     {
-
         $cPgaes = $this->_contentHelperData->getExcludedPages($store);
         if (!empty($cPgaes)) {
             foreach ($cPgaes as $key => $cvalue) {
-                $pageids[]  = (int)$cvalue['cmspages'];
+                $pageids[] = (int)$cvalue['cmspages'];
             }
         } else {
             $pageids = "";
@@ -64,59 +129,61 @@ class MagentoContentActions extends AbstractModel
             $eids = $pageids;
         }
 
-        if (in_array($this->_ProductMetadataInterface->getEdition(),array("Enterprise","B2B")) && version_compare($this->_ProductMetadataInterface->getVersion(), '2.1.0', '>=')===true) {
-		$actions = [
-            'delete' => $this->_frameworkModelResource->getConnection("core_write")
-                ->select()
-                /*
-                 * Select synced cms in the current store/mode that
-                 * are no longer enabled
-                 */
-                ->from(
-                    ['k' => $this->_frameworkModelResource->getTableName("klevu_product_sync")],
-                    ['page_id' => "k.product_id"]
-                )
-                ->joinLeft(
-                    ['c' => $this->_frameworkModelResource->getTableName("cms_page")],
-                    "k.product_id = c.page_id",
-                    ""
-                )
-                ->joinLeft(
-                    ['v' => $this->_frameworkModelResource->getTableName("cms_page_store")],
-                    "v.".$this->_page_value." = c.".$this->_page_value,
-                    ""
-                )
-                ->where(
-                    "((k.store_id = :store_id AND v.store_id != 0) AND (k.type = :type) AND (k.product_id NOT IN ?)) OR ( (k.product_id IN ('".$eids."') OR (c.".$this->_page_value." IS NULL) OR (c.is_active = 0)) AND (k.type = :type) AND k.store_id = :store_id)",
-                    $this->_frameworkModelResource->getConnection("core_write")
-                        ->select()
-                        ->from(
-                            ['i' => $this->_frameworkModelResource->getTableName("cms_page")],
-                            ['page_id' => "i.page_id"]
-                        )->join(
-                            ['v' => $this->_frameworkModelResource->getTableName("cms_page_store")],
-                            "i.".$this->_page_value." = v.".$this->_page_value." AND v.store_id = :store_id",
-                            ""
-                        )
-                        ->where('i.page_id NOT IN (?)', $pageids)
-                    // ->where("i.store_id = :store_id")
-                )
-                ->group(['k.product_id'])
-                ->bind([
-                    'store_id'=> $store->getId(),
-                    'type' => "pages",
-                ]),
-            'update' =>
-                    $this->_frameworkModelResource->getConnection("core_write")
+        if (in_array($this->_ProductMetadataInterface->getEdition(), ["Enterprise", "B2B"])
+            && version_compare($this->_ProductMetadataInterface->getVersion(), '2.1.0', '>=') === true) {
+            $actions = [
+                'delete' => $this->_frameworkModelResource->getConnection("core_write")
+                    ->select()
+                    /*
+                     * Select synced cms in the current store/mode that
+                     * are no longer enabled
+                     */
+                    ->from(
+                        ['k' => $this->_frameworkModelResource->getTableName("klevu_product_sync")],
+                        ['page_id' => "k.product_id"]
+                    )
+                    ->joinLeft(
+                        ['c' => $this->_frameworkModelResource->getTableName("cms_page")],
+                        "k.product_id = c.page_id",
+                        ""
+                    )
+                    ->joinLeft(
+                        ['v' => $this->_frameworkModelResource->getTableName("cms_page_store")],
+                        "v." . $this->_page_value . " = c." . $this->_page_value,
+                        ""
+                    )
+                    ->where(
+                        "((k.store_id = :store_id AND v.store_id != 0) AND (k.type = :type) AND (k.product_id NOT IN ?))
+                         OR ( (k.product_id IN ('" . $eids . "') OR (c." . $this->_page_value . " IS NULL)
+                         OR (c.is_active = 0)) AND (k.type = :type) AND k.store_id = :store_id)",
+                        $this->_frameworkModelResource->getConnection("core_write")
+                            ->select()
+                            ->from(
+                                ['i' => $this->_frameworkModelResource->getTableName("cms_page")],
+                                ['page_id' => "i.page_id"]
+                            )->join(
+                                ['v' => $this->_frameworkModelResource->getTableName("cms_page_store")],
+                                "i." . $this->_page_value . " = v." . $this->_page_value
+                                . " AND v.store_id = :store_id",
+                                ""
+                            )
+                            ->where('i.page_id NOT IN (?)', $pageids)
+                    )
+                    ->group(['k.product_id'])
+                    ->bind([
+                        'store_id' => $store->getId(),
+                        'type' => "pages",
+                    ]),
+                'update' => $this->_frameworkModelResource->getConnection("core_write")
                         ->select()
                         /*
                          * Select pages for the current store/mode
                          * have been updated since last sync.
                          */
-                         ->from(
-                             ['k' => $this->_frameworkModelResource->getTableName("klevu_product_sync")],
-                             ['page_id' => "k.product_id"]
-                         )
+                        ->from(
+                            ['k' => $this->_frameworkModelResource->getTableName("klevu_product_sync")],
+                            ['page_id' => "k.product_id"]
+                        )
                         ->join(
                             ['c' => $this->_frameworkModelResource->getTableName("cms_page")],
                             "c.page_id = k.product_id",
@@ -124,187 +191,196 @@ class MagentoContentActions extends AbstractModel
                         )
                         ->joinLeft(
                             ['v' => $this->_frameworkModelResource->getTableName("cms_page_store")],
-                            "v.".$this->_page_value." = c.".$this->_page_value." AND v.store_id = :store_id",
+                            "v." . $this->_page_value . " = c." . $this->_page_value . " AND v.store_id = :store_id",
                             ""
                         )
-                        ->where("(c.is_active = 1) AND (k.type = :type) AND (k.store_id = :store_id) AND (c.update_time > k.last_synced_at)")
-                        ->where('c.'.$this->_page_value.' NOT IN (?)', $pageids)
-                ->bind([
-                    'store_id' => $store->getId(),
-                    'type'=> "pages",
-                    ]),
-                    'add' =>  $this->_frameworkModelResource->getConnection("core_write")
-                        ->select()
-                        ->union([
+                        ->where("(c.is_active = 1) AND (k.type = :type) AND (k.store_id = :store_id)
+                            AND (c.update_time > k.last_synced_at)")
+                        ->where('c.' . $this->_page_value . ' NOT IN (?)', $pageids)
+                        ->bind([
+                            'store_id' => $store->getId(),
+                            'type' => "pages",
+                        ]),
+                'add' => $this->_frameworkModelResource->getConnection("core_write")
+                    ->select()
+                    ->union([
                         $this->_frameworkModelResource->getConnection("core_write")
-                        ->select()
-                        /*
-                         * Select pages for the current store/mode
-                         * have been updated since last sync.
-                         */
-                        ->from(
-                            ['p' => $this->_frameworkModelResource->getTableName("cms_page")],
-                            ['page_id' => "p.page_id"]
-                        )
-                        ->where('p.page_id NOT IN (?)', $pageids)
-                        ->joinLeft(
-                            ['v' => $this->_frameworkModelResource->getTableName("cms_page_store")],
-                            "p.".$this->_page_value." = v.".$this->_page_value,
-                            ""
-                        )
-                        ->joinLeft(
-                            ['k' => $this->_frameworkModelResource->getTableName("klevu_product_sync")],
-                            "p.page_id = k.product_id AND k.store_id = :store_id AND k.type = :type",
-                            ""
-                        )
-                        ->where("p.is_active = 1 AND k.product_id IS NULL AND v.store_id =0"),
+                            ->select()
+                            /*
+                             * Select pages for the current store/mode
+                             * have been updated since last sync.
+                             */
+                            ->from(
+                                ['p' => $this->_frameworkModelResource->getTableName("cms_page")],
+                                ['page_id' => "p.page_id"]
+                            )
+                            ->where('p.page_id NOT IN (?)', $pageids)
+                            ->joinLeft(
+                                ['v' => $this->_frameworkModelResource->getTableName("cms_page_store")],
+                                "p." . $this->_page_value . " = v." . $this->_page_value,
+                                ""
+                            )
+                            ->joinLeft(
+                                ['k' => $this->_frameworkModelResource->getTableName("klevu_product_sync")],
+                                "p.page_id = k.product_id AND k.store_id = :store_id AND k.type = :type",
+                                ""
+                            )
+                            ->where("p.is_active = 1 AND k.product_id IS NULL AND v.store_id =0"),
                         $this->_frameworkModelResource->getConnection("core_write")
-                        ->select()
-                        /*
-                         * Select pages for the current store/mode
-                         * have been updated since last sync.
-                         */
-                        ->from(
-                            ['p' => $this->_frameworkModelResource->getTableName("cms_page")],
-                            ['page_id' => "p.".$this->_page_value]
-                        )
-                        ->where('p.'.$this->_page_value.' NOT IN (?)', $pageids)
-                        ->join(
-                            ['v' => $this->_frameworkModelResource->getTableName("cms_page_store")],
-                            "p.".$this->_page_value." = v.".$this->_page_value." AND v.store_id = :store_id",
-                            ""
-                        )
-                        ->joinLeft(
-                            ['k' => $this->_frameworkModelResource->getTableName("klevu_product_sync")],
-                            "v.".$this->_page_value." = k.product_id AND k.store_id = :store_id AND k.type = :type",
-                            ""
-                        )
-                        ->where("p.is_active = 1 AND k.product_id IS NULL")
-                        ])
+                            ->select()
+                            /*
+                             * Select pages for the current store/mode
+                             * have been updated since last sync.
+                             */
+                            ->from(
+                                ['p' => $this->_frameworkModelResource->getTableName("cms_page")],
+                                ['page_id' => "p." . $this->_page_value]
+                            )
+                            ->where('p.' . $this->_page_value . ' NOT IN (?)', $pageids)
+                            ->join(
+                                ['v' => $this->_frameworkModelResource->getTableName("cms_page_store")],
+                                "p." . $this->_page_value . " = v." . $this->_page_value
+                                . " AND v.store_id = :store_id",
+                                ""
+                            )
+                            ->joinLeft(
+                                ['k' => $this->_frameworkModelResource->getTableName("klevu_product_sync")],
+                                "v." . $this->_page_value
+                                . " = k.product_id AND k.store_id = :store_id AND k.type = :type",
+                                ""
+                            )
+                            ->where("p.is_active = 1 AND k.product_id IS NULL"),
+                    ])
                     ->bind([
-                    'type' => "pages",
-                    'store_id' => $store->getId(),
+                        'type' => "pages",
+                        'store_id' => $store->getId(),
                     ]),
             ];
         } else {
             $actions = [
-            'delete' => $this->_frameworkModelResource->getConnection("core_write")
-                ->select()
-                /*
-                 * Select synced cms in the current store/mode that
-                 * are no longer enabled
-                 */
-                ->from(
-                    ['k' => $this->_frameworkModelResource->getTableName("klevu_product_sync")],
-                    ['page_id' => "k.product_id"]
-                )
-                ->joinLeft(
-                    ['c' => $this->_frameworkModelResource->getTableName("cms_page")],
-                    "k.product_id = c.".$this->_page_value,
-                    ""
-                )
-                ->joinLeft(
-                    ['v' => $this->_frameworkModelResource->getTableName("cms_page_store")],
-                    "v.".$this->_page_value." = c.".$this->_page_value,
-                    ""
-                )
-                ->where(
-                    "((k.store_id = :store_id AND v.store_id != 0) AND (k.type = :type) AND (k.product_id NOT IN ?)) OR ( (k.product_id IN ('".$eids."') OR (c.".$this->_page_value." IS NULL) OR (c.is_active = 0)) AND (k.type = :type) AND k.store_id = :store_id)",
-                    $this->_frameworkModelResource->getConnection("core_write")
-                        ->select()
-                        ->from(
-                            ['i' => $this->_frameworkModelResource->getTableName("cms_page_store")],
-                            ['page_id' => "i.".$this->_page_value]
-                        )
-                        ->where('i.'.$this->_page_value.' NOT IN (?)', $pageids)
-                        ->where("i.store_id = :store_id OR i.store_id = 0")
-                )
-                ->group(['k.product_id'])
-                ->bind([
-                    'store_id'=> $store->getId(),
-                    'type' => "pages",
-                ]),
-            'update' =>
-                    $this->_frameworkModelResource->getConnection("core_write")
+                'delete' => $this->_frameworkModelResource->getConnection("core_write")
+                    ->select()
+                    /*
+                     * Select synced cms in the current store/mode that
+                     * are no longer enabled
+                     */
+                    ->from(
+                        ['k' => $this->_frameworkModelResource->getTableName("klevu_product_sync")],
+                        ['page_id' => "k.product_id"]
+                    )
+                    ->joinLeft(
+                        ['c' => $this->_frameworkModelResource->getTableName("cms_page")],
+                        "k.product_id = c." . $this->_page_value,
+                        ""
+                    )
+                    ->joinLeft(
+                        ['v' => $this->_frameworkModelResource->getTableName("cms_page_store")],
+                        "v." . $this->_page_value . " = c." . $this->_page_value,
+                        ""
+                    )
+                    ->where(
+                        "((k.store_id = :store_id AND v.store_id != 0) AND (k.type = :type) AND (k.product_id NOT IN ?))
+                        OR ( (k.product_id IN ('" . $eids . "') OR (c." . $this->_page_value . " IS NULL)
+                        OR (c.is_active = 0)) AND (k.type = :type) AND k.store_id = :store_id)",
+                        $this->_frameworkModelResource->getConnection("core_write")
+                            ->select()
+                            ->from(
+                                ['i' => $this->_frameworkModelResource->getTableName("cms_page_store")],
+                                ['page_id' => "i." . $this->_page_value]
+                            )
+                            ->where('i.' . $this->_page_value . ' NOT IN (?)', $pageids)
+                            ->where("i.store_id = :store_id OR i.store_id = 0")
+                    )
+                    ->group(['k.product_id'])
+                    ->bind([
+                        'store_id' => $store->getId(),
+                        'type' => "pages",
+                    ]),
+                'update' => $this->_frameworkModelResource->getConnection("core_write")
                         ->select()
                         /*
                          * Select pages for the current store/mode
                          * have been updated since last sync.
                          */
-                         ->from(
-                             ['k' => $this->_frameworkModelResource->getTableName("klevu_product_sync")],
-                             ['page_id' => "k.product_id"]
-                         )
+                        ->from(
+                            ['k' => $this->_frameworkModelResource->getTableName("klevu_product_sync")],
+                            ['page_id' => "k.product_id"]
+                        )
                         ->join(
                             ['c' => $this->_frameworkModelResource->getTableName("cms_page")],
-                            "c.".$this->_page_value." = k.product_id",
+                            "c." . $this->_page_value . " = k.product_id",
                             ""
                         )
                         ->joinLeft(
                             ['v' => $this->_frameworkModelResource->getTableName("cms_page_store")],
-                            "v.".$this->_page_value." = c.".$this->_page_value." AND v.store_id = :store_id",
+                            "v." . $this->_page_value . " = c." . $this->_page_value . " AND v.store_id = :store_id",
                             ""
                         )
-                        ->where("(c.is_active = 1) AND (k.type = :type) AND (k.store_id = :store_id) AND (c.update_time > k.last_synced_at)")
-                        ->where('c.'.$this->_page_value.' NOT IN (?)', $pageids)
-                ->bind([
-                    'store_id' => $store->getId(),
-                    'type'=> "pages",
-                    ]),
-                    'add' =>  $this->_frameworkModelResource->getConnection("core_write")
-                        ->select()
-                        ->union([
+                        ->where("(c.is_active = 1)
+                            AND (k.type = :type) AND (k.store_id = :store_id) AND (c.update_time > k.last_synced_at)")
+                        ->where('c.' . $this->_page_value . ' NOT IN (?)', $pageids)
+                        ->bind([
+                            'store_id' => $store->getId(),
+                            'type' => "pages",
+                        ]),
+                'add' => $this->_frameworkModelResource->getConnection("core_write")
+                    ->select()
+                    ->union([
                         $this->_frameworkModelResource->getConnection("core_write")
-                        ->select()
-                        /*
-                         * Select pages for the current store/mode
-                         * have been updated since last sync.
-                         */
-                        ->from(
-                            ['p' => $this->_frameworkModelResource->getTableName("cms_page")],
-                            ['page_id' => "p.".$this->_page_value]
-                        )
-                        ->where('p.'.$this->_page_value.' NOT IN (?)', $pageids)
-                        ->joinLeft(
-                            ['v' => $this->_frameworkModelResource->getTableName("cms_page_store")],
-                            "p.".$this->_page_value." = v.".$this->_page_value,
-                            ""
-                        )
-                        ->joinLeft(
-                            ['k' => $this->_frameworkModelResource->getTableName("klevu_product_sync")],
-                            "p.".$this->_page_value." = k.product_id AND k.store_id = :store_id AND k.type = :type",
-                            ""
-                        )
-                        ->where("p.is_active = 1 AND k.product_id IS NULL AND v.store_id =0"),
+                            ->select()
+                            /*
+                             * Select pages for the current store/mode
+                             * have been updated since last sync.
+                             */
+                            ->from(
+                                ['p' => $this->_frameworkModelResource->getTableName("cms_page")],
+                                ['page_id' => "p." . $this->_page_value]
+                            )
+                            ->where('p.' . $this->_page_value . ' NOT IN (?)', $pageids)
+                            ->joinLeft(
+                                ['v' => $this->_frameworkModelResource->getTableName("cms_page_store")],
+                                "p." . $this->_page_value . " = v." . $this->_page_value,
+                                ""
+                            )
+                            ->joinLeft(
+                                ['k' => $this->_frameworkModelResource->getTableName("klevu_product_sync")],
+                                "p." . $this->_page_value
+                                . " = k.product_id AND k.store_id = :store_id AND k.type = :type",
+                                ""
+                            )
+                            ->where("p.is_active = 1 AND k.product_id IS NULL AND v.store_id =0"),
                         $this->_frameworkModelResource->getConnection("core_write")
-                        ->select()
-                        /*
-                         * Select pages for the current store/mode
-                         * have been updated since last sync.
-                         */
-                        ->from(
-                            ['p' => $this->_frameworkModelResource->getTableName("cms_page")],
-                            ['page_id' => "p.".$this->_page_value]
-                        )
-                        ->where('p.'.$this->_page_value.' NOT IN (?)', $pageids)
-                        ->join(
-                            ['v' => $this->_frameworkModelResource->getTableName("cms_page_store")],
-                            "p.".$this->_page_value." = v.".$this->_page_value." AND v.store_id = :store_id",
-                            ""
-                        )
-                        ->joinLeft(
-                            ['k' => $this->_frameworkModelResource->getTableName("klevu_product_sync")],
-                            "v.".$this->_page_value." = k.product_id AND k.store_id = :store_id AND k.type = :type",
-                            ""
-                        )
-                        ->where("p.is_active = 1 AND k.product_id IS NULL")
-                        ])
+                            ->select()
+                            /*
+                             * Select pages for the current store/mode
+                             * have been updated since last sync.
+                             */
+                            ->from(
+                                ['p' => $this->_frameworkModelResource->getTableName("cms_page")],
+                                ['page_id' => "p." . $this->_page_value]
+                            )
+                            ->where('p.' . $this->_page_value . ' NOT IN (?)', $pageids)
+                            ->join(
+                                ['v' => $this->_frameworkModelResource->getTableName("cms_page_store")],
+                                "p." . $this->_page_value . " = v." . $this->_page_value
+                                . " AND v.store_id = :store_id",
+                                ""
+                            )
+                            ->joinLeft(
+                                ['k' => $this->_frameworkModelResource->getTableName("klevu_product_sync")],
+                                "v." . $this->_page_value
+                                . " = k.product_id AND k.store_id = :store_id AND k.type = :type",
+                                ""
+                            )
+                            ->where("p.is_active = 1 AND k.product_id IS NULL"),
+                    ])
                     ->bind([
-                    'type' => "pages",
-                    'store_id' => $store->getId(),
+                        'type' => "pages",
+                        'store_id' => $store->getId(),
                     ]),
             ];
         }
+
         return $actions;
     }
 
@@ -317,29 +393,36 @@ class MagentoContentActions extends AbstractModel
      *                    the value.
      *
      * @return bool|string
+     * @deprecated Currently not in use internally by module, kept for Backward Compatibility
+     * @see \Klevu\Content\Model\Content::deletecms()
      */
     public function deletecms(array $data)
     {
         $total = count($data);
-        $response = $this->_apiActionDeleterecords->setStore($this->_storeModelStoreManagerInterface->getStore())->execute([
-            'sessionId' => $this->getSessionId() ,
-            'records' => array_map(function ($v) {
-
-                return [
-                    'id' => "pageid_" . $v['page_id']
-                ];
-            }, $data)
-        ]);
+        $response = $this->_apiActionDeleterecords->setStore($this->_storeModelStoreManagerInterface->getStore())
+            ->execute([
+                'sessionId' => $this->getSessionId(),
+                'records' => array_map(function ($v) {
+                    return [
+                        'id' => "pageid_" . $v['page_id'],
+                    ];
+                }, $data),
+            ]);
         if ($response->isSuccess()) {
             $this->_klevuContentActions->executeDeleteContentSuccess($data, $response);
         } else {
-			$this->_searchModelSession->setKlevuFailedFlag(1);
-            return sprintf("%d cms%s failed (%s)", $total, ($total > 1) ? "s" : "", $response->getMessage());
+            $this->_searchModelSession->setKlevuFailedFlag(1);
+
+            return sprintf(
+                "%d cms%s failed (%s)",
+                $total,
+                ($total > 1) ? "s" : "",
+                $response->getMessage()
+            );
         }
     }
 
-
-	/**
+    /**
      * Update the given pages on Klevu Search. Returns true if the operation was successful,
      * or the error message if it failed.
      *
@@ -348,20 +431,29 @@ class MagentoContentActions extends AbstractModel
      *                    the value
      *
      * @return bool|string
+     * @deprecated Currently not in use internally by module, kept for Backward Compatibility
+     * @see \Klevu\Content\Model\Content::updateCms()
      */
     public function updateCms(array $data)
     {
         $total = count($data);
         $data = $this->_loadAttribute->addCmsData($data);
-        $response = $this->_apiActionUpdaterecords->setStore($this->_storeModelStoreManagerInterface->getStore())->execute([
-            'sessionId' => $this->getSessionId() ,
-            'records' => $data
-        ]);
+        $response = $this->_apiActionUpdaterecords->setStore($this->_storeModelStoreManagerInterface->getStore())
+            ->execute([
+                'sessionId' => $this->getSessionId(),
+                'records' => $data,
+            ]);
         if ($response->isSuccess()) {
             $this->_klevuContentActions->executeUpdateContentSuccess($data, $response);
         } else {
-			$this->_searchModelSession->setKlevuFailedFlag(1);
-            return sprintf("%d cms%s failed (%s)", $total, ($total > 1) ? "s" : "", $response->getMessage());
+            $this->_searchModelSession->setKlevuFailedFlag(1);
+
+            return sprintf(
+                "%d cms%s failed (%s)",
+                $total,
+                ($total > 1) ? "s" : "",
+                $response->getMessage()
+            );
         }
     }
 
@@ -374,30 +466,41 @@ class MagentoContentActions extends AbstractModel
      *                    the value.
      *
      * @return bool|string
+     * @deprecated Currently not in use internally by module, kept for Backward Compatibility
+     * @see \Klevu\Content\Model\Content::addCms()
      */
     public function addCms(array $data)
     {
         $total = count($data);
         $data = $this->_loadAttribute->addCmsData($data);
-        $response = $this->_apiActionAddrecords->setStore($this->_storeModelStoreManagerInterface->getStore())->execute([
-            'sessionId' => $this->getSessionId() ,
-            'records' => $data
-        ]);
+        $response = $this->_apiActionAddrecords->setStore($this->_storeModelStoreManagerInterface->getStore())
+            ->execute([
+                'sessionId' => $this->getSessionId(),
+                'records' => $data,
+            ]);
         if ($response->isSuccess()) {
             $this->_klevuContentActions->executeAddContentSuccess($data, $response);
         } else {
-			$this->_searchModelSession->setKlevuFailedFlag(1);
-            return sprintf("%d cms%s failed (%s)", $total, ($total > 1) ? "s" : "", $response->getMessage());
+            $this->_searchModelSession->setKlevuFailedFlag(1);
+
+            return sprintf(
+                "%d cms%s failed (%s)",
+                $total,
+                ($total > 1) ? "s" : "",
+                $response->getMessage()
+            );
         }
     }
 
     /**
-     * @param null $store
+     * @param mixed $stores
+     *
      * @return $this
      */
     public function markCMSRecordIntoQueue($stores = null)
     {
-        $whereType = $this->_frameworkModelResource->getConnection('core_write')->quoteInto('type = ?', 'pages');
+        $whereType = $this->_frameworkModelResource->getConnection('core_write')
+            ->quoteInto('type = ?', 'pages');
         $where = sprintf(" %s", $whereType);
         if ($stores !== null) {
             if (is_array($stores)) {
@@ -413,7 +516,7 @@ class MagentoContentActions extends AbstractModel
             ['last_synced_at' => '0'],
             $where
         );
+
         return $this;
     }
 }
-

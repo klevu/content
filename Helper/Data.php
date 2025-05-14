@@ -82,7 +82,7 @@ class Data extends AbstractHelper
         Searchtermtracking $apiActionSearchtermtracking,
         ScopeConfigInterface $appConfigScopeConfigInterface,
         MagentoSearchHelper $catalogSearchHelper,
-        SerializerInterface $serializer = null
+        ?SerializerInterface $serializer = null
     ) {
         $this->_frameworkAppRequestInterface = $frameworkAppRequestInterface;
         $this->_searchHelperConfig = $searchHelperConfig;

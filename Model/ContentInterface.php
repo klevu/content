@@ -1,21 +1,17 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Administrator
- * Date: 9/19/2018
- * Time: 12:06 PM
- */
 
 namespace Klevu\Content\Model;
 
-/**
- * Interface ContentInterface
- * @package Klevu\Content\Model
- */
 interface ContentInterface
 {
+    /**
+     * @return mixed
+     */
     public function _construct();
 
+    /**
+     * @return mixed
+     */
     public function getJobCode();
 
     /**
@@ -26,14 +22,30 @@ interface ContentInterface
 
     /**
      * @param $store
+     *
      * @return mixed
      */
     public function syncCmsData($store);
 
+    /**
+     * @param $store
+     *
+     * @return mixed
+     */
     public function deletePagesCollection($store);
 
+    /**
+     * @param $store
+     *
+     * @return mixed
+     */
     public function addPagesCollection($store);
 
+    /**
+     * @param $store
+     *
+     * @return mixed
+     */
     public function updatePagesCollection($store);
 
     /**
