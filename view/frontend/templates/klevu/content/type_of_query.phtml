@@ -11,12 +11,12 @@ $isCmsSyncEnabledOnFront = $block->isCmsSyncEnabledOnFront()
 ?>
 
 <?php if ($block->isExtensionConfigured()): ?>
-    <?= $secureRenderer->renderTag(
-        'script',
-        ['type' => 'text/javascript'],
-        'var klevu_cms_module_enabled = true;',
-        true
-    ) ?>
+    <?= /* @noEscape */ $secureRenderer->renderTag(
+    'script',
+    ['type' => 'text/javascript'],
+    'var klevu_cms_module_enabled = true;',
+    true
+) ?>
 <?php endif; ?>
 
 <?php
@@ -26,7 +26,7 @@ $scriptString = <<<script
 
 script;
 ?>
-<?= $secureRenderer->renderTag(
+<?= /* @noEscape */ $secureRenderer->renderTag(
     'script',
     ['type' => 'text/javascript'],
     $scriptString,
