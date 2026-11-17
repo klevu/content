@@ -265,10 +265,8 @@ HELP
                     $e->getMessage()
                 )
             );
-            if (isset($storeLockFile)) {
-                if ($this->fileDriver->isExists($storeLockFile)) {
-                    $this->fileDriver->deleteFile($storeLockFile);
-                }
+            if ($this->fileDriver->isExists($storeLockFile)) {
+                $this->fileDriver->deleteFile($storeLockFile);
             }
             $this->storeScopeResolver->setCurrentStoreById(0);
 

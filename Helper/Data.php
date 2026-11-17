@@ -389,7 +389,7 @@ class Data extends AbstractHelper
     /**
      * Get the active filters, then prepare them for Klevu.
      *
-     * @return string
+     * @return string|null
      */
     protected function _getPreparedFilters()
     {
