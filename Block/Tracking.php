@@ -15,18 +15,20 @@ class Tracking extends \Magento\Framework\View\Element\Template
 
     public function __construct(
         \Klevu\Search\Helper\Config $searchHelperConfig,
-        \Magento\Cms\Model\Page $cmsModelPage
+        \Magento\Cms\Model\Page $cmsModelPage,
+        \Magento\Framework\View\Element\Template\Context $context,
+        array $data = []
     ) {
     
         $this->_searchHelperConfig = $searchHelperConfig;
         $this->_cmsModelPage = $cmsModelPage;
 
-        parent::__construct();
+        parent::__construct($context, $data);
     }
 
     /**
      * JSON of required tracking parameter for Klevu Product Click Tracking, based on current product
-     * @return string
+     * @return string|false|null
      * @throws Exception
      */
     public function getJsonTrackingData()

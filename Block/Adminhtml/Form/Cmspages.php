@@ -4,9 +4,8 @@ namespace Klevu\Content\Block\Adminhtml\Form;
 
 use Klevu\Content\Block\Adminhtml\Form\System\Config\Field\Select as FormFieldSelect;
 use Magento\Backend\Block\Template\Context as Template_Context;
-use Magento\Cms\Model\Page as CmsPage;
+use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as PageCollectionFactory;
 use Magento\Config\Block\System\Config\Form\Field\FieldArray\AbstractFieldArray;
-use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Data\Form\Element\AbstractElement;
 use Magento\Framework\DataObject;
 use Magento\Framework\Exception\LocalizedException;
@@ -29,15 +28,23 @@ class Cmspages extends AbstractFieldArray
     private $storeManager;
 
     /**
+     * @var PageCollectionFactory
+     */
+    private $pageCollectionFactory;
+
+    /**
      * @param Template_Context $context
+     * @param PageCollectionFactory $pageCollectionFactory
      * @param array $data
      */
     public function __construct(
         Template_Context $context,
+        PageCollectionFactory $pageCollectionFactory,
         array $data = []
     ) {
         parent::__construct($context, $data);
         $this->_context = $context;
+        $this->pageCollectionFactory = $pageCollectionFactory;
     }
 
     /**
@@ -91,8 +98,7 @@ class Cmspages extends AbstractFieldArray
      */
     protected function _getpageRenderer()
     {
-        $this->_cmsModelPage = ObjectManager::getInstance()->get(CmsPage::class);
-        $cms_pages = $this->_cmsModelPage->getCollection()->addFieldToSelect([
+        $cms_pages = $this->pageCollectionFactory->create()->addFieldToSelect([
             "page_id",
             "title"
         ])->addFieldToFilter('is_active', 1);

@@ -12,6 +12,7 @@ use Klevu\Search\Model\Context;
 use Klevu\Search\Model\Sync;
 use Magento\Catalog\Model\Category;
 use Magento\Cms\Model\Page as CmsPage;
+use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as PageCollectionFactory;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -63,17 +64,25 @@ class LoadAttribute extends AbstractModel
     private $_cmsModelPage;
 
     /**
+     * @var PageCollectionFactory
+     */
+    private $pageCollectionFactory;
+
+    /**
      * @param Context $context
      * @param Category $catalogModelCategory
+     * @param PageCollectionFactory $pageCollectionFactory
      * @param ContentHelper|null $contentHelper
      * @param CmsPage|null $cmsPage
      */
     public function __construct(
         Context $context,
         Category $catalogModelCategory,
+        PageCollectionFactory $pageCollectionFactory,
         ?ContentHelper $contentHelper = null,
         ?CmsPage $cmsPage = null
     ) {
+        $this->pageCollectionFactory = $pageCollectionFactory;
         $helperManager = $context->getHelperManager();
         $this->_storeModelStoreManagerInterface = $context->getStoreManagerInterface();
         $this->_frameworkModelResource = $context->getResourceConnection();
@@ -119,7 +128,7 @@ class LoadAttribute extends AbstractModel
         $base_url = $store->getBaseUrl(UrlInterface::URL_TYPE_LINK, $store->isFrontUrlSecure());
 
         $cmsData = [];
-        $pageCollection = $this->_cmsModelPage->getCollection();
+        $pageCollection = $this->pageCollectionFactory->create();
         if ($pageCollection) {
             $pageCollection->addStoreFilter($store->getId());
             $pageCollection->addFieldToSelect("*");

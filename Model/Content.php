@@ -12,11 +12,13 @@ use Klevu\Search\Model\Api\Action\Deleterecords;
 use Klevu\Search\Model\Api\Action\Startsession;
 use Klevu\Search\Model\Api\Action\Updaterecords;
 use Klevu\Search\Model\Klevu\KlevuFactory as Klevu_Factory;
+use Klevu\Search\Model\Klevu\ResourceModel\Klevu\CollectionFactory as KlevuCollectionFactory;
 use Klevu\Search\Model\Product\KlevuProductActionsInterface as Klevu_Product_Actions;
 use Klevu\Search\Model\Product\Sync as KlevuProductSync;
 use Klevu\Search\Model\Sync as KlevuSync;
 use Magento\Backend\Model\Session;
 use Magento\Cms\Model\Page;
+use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as PageCollectionFactory;
 use Magento\Cron\Model\Schedule;
 use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\App\ResourceConnection;
@@ -90,6 +92,16 @@ class Content extends KlevuProductSync implements ContentInterface
     protected $_page_value;
 
     /**
+     * @var PageCollectionFactory
+     */
+    private $pageCollectionFactory;
+
+    /**
+     * @var KlevuCollectionFactory
+     */
+    private $klevuCollectionFactory;
+
+    /**
      * @param ResourceConnection $frameworkModelResource
      * @param Session $searchModelSession
      * @param StoreManagerInterface $storeModelStoreManagerInterface
@@ -107,6 +119,8 @@ class Content extends KlevuProductSync implements ContentInterface
      * @param Klevu_Factory $klevuFactory
      * @param KlevuSync $klevuSyncModel
      * @param Klevu_Product_Actions $klevuProductActions
+     * @param PageCollectionFactory $pageCollectionFactory
+     * @param KlevuCollectionFactory $klevuCollectionFactory
      */
     public function __construct(
         ResourceConnection $frameworkModelResource,
@@ -125,8 +139,12 @@ class Content extends KlevuProductSync implements ContentInterface
         ProductMetadataInterface $productMetadataInterface,
         Klevu_Factory $klevuFactory,
         KlevuSync $klevuSyncModel,
-        Klevu_Product_Actions $klevuProductActions
+        Klevu_Product_Actions $klevuProductActions,
+        PageCollectionFactory $pageCollectionFactory,
+        KlevuCollectionFactory $klevuCollectionFactory
     ) {
+        $this->pageCollectionFactory = $pageCollectionFactory;
+        $this->klevuCollectionFactory = $klevuCollectionFactory;
         $this->_klevuSyncModel = $klevuSyncModel;
         $this->_klevuSyncModel->setJobCode($this->getJobCode());
         $this->_klevuFactory = $klevuFactory;
@@ -323,7 +341,7 @@ class Content extends KlevuProductSync implements ContentInterface
         $klevuPages = $this->getKlevuProductCollection($store);
         $klevuPageIds = [];
         $magePageIds = [];
-        $activePages = $this->_cmsModelPage->getCollection()
+        $activePages = $this->pageCollectionFactory->create()
             ->addFieldToSelect('page_id')
             ->addStoreFilter($store->getId())
             ->addFieldToFilter('is_active', 1)
@@ -372,7 +390,7 @@ class Content extends KlevuProductSync implements ContentInterface
         $k_page_ids = [];
         $m_page_ids = [];
         $k_pages = $this->getKlevuProductCollection($store);
-        $cms_ids = $this->_cmsModelPage->getCollection()
+        $cms_ids = $this->pageCollectionFactory->create()
             ->addFieldToSelect('page_id')
             ->addStoreFilter($store->getId())
             ->addFieldToFilter('is_active', 1)
@@ -399,7 +417,7 @@ class Content extends KlevuProductSync implements ContentInterface
     {
         $klevuToUpdate = [];
         $klevu = $this->_klevuFactory->create();
-        $klevuCollection = $klevu->getCollection()
+        $klevuCollection = $this->klevuCollectionFactory->create()
             ->addFieldToFilter($klevu->getKlevuField('type'), $klevu->getKlevuType('page'))
             ->addFieldToFilter($klevu->getKlevuField('store_id'), $store->getid())
             ->join(
@@ -431,7 +449,7 @@ class Content extends KlevuProductSync implements ContentInterface
     {
         $limit = $this->_klevuSyncModel->getSessionVariable("limit");
         $klevu = $this->_klevuFactory->create();
-        $klevuCollection = $klevu->getCollection()
+        $klevuCollection = $this->klevuCollectionFactory->create()
             ->addFieldToSelect($klevu->getKlevuField('product_id'))
             ->addFieldToSelect($klevu->getKlevuField('store_id'))
             ->addFieldToFilter($klevu->getKlevuField('type'), $klevu->getKlevuType('page'))
@@ -627,7 +645,7 @@ class Content extends KlevuProductSync implements ContentInterface
             $base_url = $this->_storeModelStoreManagerInterface->getStore()
                 ->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_LINK);
         }
-        $data = $this->_cmsModelPage->getCollection()
+        $data = $this->pageCollectionFactory->create()
             ->addStoreFilter($this->_storeModelStoreManagerInterface->getStore()->getId())
             ->addFieldToSelect("*")
             ->addFieldToFilter('page_id', [

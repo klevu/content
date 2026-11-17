@@ -13,7 +13,6 @@ use Klevu\Search\Model\Api\Action\Deleterecords;
 use Klevu\Search\Model\Api\Action\Updaterecords;
 use Klevu\Search\Model\Context as Klevu_Search_Context;
 use Magento\Backend\Model\Session as BackendSession;
-use Magento\Eav\Model\Config as Eav_Config;
 use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Model\AbstractModel as AbstractModel;
@@ -68,14 +67,12 @@ class MagentoContentActions extends AbstractModel
 
     /**
      * @param Klevu_Search_Context $context
-     * @param Eav_Config $eavConfig
      * @param KlevuContentActions $klevuContentAction
      * @param LoadAttribute $loadAttribute
      * @param Klevu_Content_Helper $contentHelperData
      */
     public function __construct(
         Klevu_Search_Context $context,
-        Eav_Config $eavConfig,
         Klevu_Content_Actions $klevuContentAction,
         Klevu_LoadContentAttribute $loadAttribute,
         Klevu_Content_Helper $contentHelperData
@@ -392,7 +389,7 @@ class MagentoContentActions extends AbstractModel
      *                    containing an element with "page_id" as the key and page id as
      *                    the value.
      *
-     * @return bool|string
+     * @return bool|string|null
      * @deprecated Currently not in use internally by module, kept for Backward Compatibility
      * @see \Klevu\Content\Model\Content::deletecms()
      */
@@ -430,7 +427,7 @@ class MagentoContentActions extends AbstractModel
      *                    containing an element with "page_id" as the key and page id as
      *                    the value
      *
-     * @return bool|string
+     * @return bool|string|null
      * @deprecated Currently not in use internally by module, kept for Backward Compatibility
      * @see \Klevu\Content\Model\Content::updateCms()
      */
@@ -465,7 +462,7 @@ class MagentoContentActions extends AbstractModel
      *                    containing an element with "page_id" as the key and page id as
      *                    the value.
      *
-     * @return bool|string
+     * @return bool|string|null
      * @deprecated Currently not in use internally by module, kept for Backward Compatibility
      * @see \Klevu\Content\Model\Content::addCms()
      */
